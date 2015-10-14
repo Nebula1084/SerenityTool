@@ -9,8 +9,8 @@
 #ifndef __Assembler__Assembler__
 #define __Assembler__Assembler__
 
-#include <CommonTypedef.h>
-#include <AssemblerLine.h>
+#include "CommonTypedef.h"
+#include "AssemblerLine.h"
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -39,7 +39,7 @@ public:
     Instruction immInsAsm(AssembleLine &assembleLine);
     Instruction spcInsAsm(AssembleLine &assembleLine);
     Instruction loadSaveInsAsm(AssembleLine &assembleLine);
-    int immatoi(string immStr);
+    int immatoi(string immStr, int bits);
 };
 
 

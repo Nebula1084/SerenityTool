@@ -6,7 +6,7 @@
 //  Copyright (c) 2015年 scn3. All rights reserved.
 //
 
-#include <Assembler.h>
+#include "Assembler.h"
 
 Assembler::Assembler() {}
 Assembler::~Assembler() {}
@@ -361,7 +361,7 @@ Instruction Assembler::jumpInsAsm(AssembleLine &assembleLine, int curLine)  // �
             return errorIns;
         string addr = assembleLine.getOperand(0);
         if (labelTable.find(addr) == labelTable.end()) {
-            imm = immatoi(addr);
+            imm = immatoi(addr, 26);
             if (imm == errorIns)
                 return errorIns;
             if (imm > 0x03ffffff || imm < 0)
@@ -375,7 +375,7 @@ Instruction Assembler::jumpInsAsm(AssembleLine &assembleLine, int curLine)  // �
             return errorIns;
         string addr = assembleLine.getOperand(2);
         if (labelTable.find(addr) == labelTable.end()) {
-            imm = immatoi(addr);
+            imm = immatoi(addr, 16);
             if (imm == errorIns)
                 return errorIns;
             if (imm < -32768 || imm > 32767)
@@ -393,7 +393,7 @@ Instruction Assembler::jumpInsAsm(AssembleLine &assembleLine, int curLine)  // �
             return errorIns;
         string addr = assembleLine.getOperand(1);
         if (labelTable.find(addr) == labelTable.end()) {
-            imm = immatoi(addr);
+            imm = immatoi(addr, 16);
             if (imm == errorIns)
                 return errorIns;
             if (imm < -32768 || imm > 32767)
@@ -421,18 +421,18 @@ Instruction Assembler::immInsAsm(AssembleLine &assembleLine)  // 基本完善
     if (opName == "lui") {   // lui指令仅有RT寄存器
         if (assembleLine.numOfOperand() != 2)
             return errorIns;
-        imm = immatoi(assembleLine.getOperand(1));
+        imm = immatoi(assembleLine.getOperand(1), 16);
         if (imm == errorIns)
             return errorIns;
-        if (imm < -32768 || imm > 32767)
-            return errorIns;
+     //   if (imm < -32768 || imm > 32767)
+       //     return errorIns;
         ins |= assembleInfo.reg[assembleLine.getOperand(0)] << 16;
         ins |= imm & 0x0000ffff;
     }
     else {   // 其余有RT、RS寄存器
         if (assembleLine.numOfOperand() != 3)
             return errorIns;
-        imm = immatoi(assembleLine.getOperand(2));
+        imm = immatoi(assembleLine.getOperand(2), 16);
         if (imm == errorIns)
             return errorIns;
         ins |= assembleInfo.reg[assembleLine.getOperand(0)] << 16;
@@ -487,11 +487,11 @@ Instruction Assembler::loadSaveInsAsm(AssembleLine &assembleLine)  // 待完善
     int offset;
     
     if (assembleLine.numOfOperand() == 3) {
-        offset = immatoi(assembleLine.getOperand(2));
+        offset = immatoi(assembleLine.getOperand(2), 16);
         if (offset == errorIns)
             return errorIns;
-        if (offset < -32768 || offset > 32767)
-            return errorIns;
+    //    if (offset < -32768 || offset > 32767)
+      //      return errorIns;
         ins |= assembleInfo.reg[assembleLine.getOperand(0)] << 16;
         ins |= assembleInfo.reg[assembleLine.getOperand(1)] << 21;
         ins |= offset & 0x0000ffff;
@@ -503,7 +503,7 @@ Instruction Assembler::loadSaveInsAsm(AssembleLine &assembleLine)  // 待完善
     return ins;
 }
 
-int Assembler::immatoi(string immStr)
+int Assembler::immatoi(string immStr, int bits)
 {
     int i = 0, radix = 10;
     bool isNegative = false;
@@ -528,12 +528,18 @@ int Assembler::immatoi(string immStr)
         }
     if (immStr.size() == i)
         return errorIns;
-    
     int imm = 0;
     for (; i < immStr.size(); i++) {
         if (immStr.at(i) >= '0' && immStr.at(i) <= '9')
             imm = imm * radix + immStr.at(i) - '0';
+        else if (immStr.at(i) >= 'a' && immStr.at(i) <= 'f')
+            imm = imm * radix + immStr.at(i) - 'f';
         else return errorIns;
+    }
+    if (radix != 10) {
+        if (imm >= 2 << bits) {
+            return errorIns;
+        }
     }
     if (isNegative)
         return -imm;
