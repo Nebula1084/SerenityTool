@@ -1,9 +1,0 @@
-lw $s0,18($zero)
-lw $s1,22($zero)
-lw $t0,20($zero)
-lh $s2,0($s1)
-beq $s2,$zero,-5
-sh $s2,0($s0)
-add $s1,$s1,$t0
-add $s0,$s0,$t0
-j 3

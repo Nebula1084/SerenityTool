@@ -2,71 +2,27 @@
 //  Assembler.cpp
 //  Assembler
 //
-//  Created by scn3 on 15/9/21.
-//  Copyright (c) 2015年 scn3. All rights reserved.
+//  Created by scn3 on 15/10/17.
+//  Copyright © 2015年 scn3. All rights reserved.
 //
 
-#include "Assembler.h"
+#include "Assembler.hpp"
+#include "RegInstruction.hpp"
+#include "JumpInstruction.hpp"
+#include "ImmInstruction.hpp"
+#include "SpcInstruction.hpp"
+#include "LoadSaveInstruction.hpp"
+#include "PseudoInstruction.hpp"
+#include "FormatInstruction.hpp"
+#include "global.hpp"
+#include <set>
+#include <iostream>
+#include <iomanip>
 
 Assembler::Assembler() {}
 Assembler::~Assembler() {}
 
-ErrorInfo Assembler::generateBinaryFile(string fileName)
-{
-    AssembleSet assembleSet1, assembleSet2;
-    ErrorInfo errorInfo;
-    
-    errorInfo = formation(assembleSet1);
-    if (errorInfo != correct)
-        return errorInfo;
-    errorInfo = pseudoOp(assembleSet1, assembleSet2);
-    if (errorInfo != correct)
-        return errorInfo;
-    errorInfo = getLabelTable(assembleSet2);
-    if (errorInfo != correct)
-        return errorInfo;
-    
-    fout.open(fileName.c_str());
-    Instruction instruction;
-    int curLine = 0;
-    for (vector<AssembleLine>::iterator itr = assembleSet2.begin(); itr != assembleSet2.end(); itr++, curLine++)
-    {
-        AssembleLine currentLine = *itr;
-        string opName = currentLine.getOpName();
-        switch (assembleInfo.insType[opName]) {
-            case RegIns:
-                instruction = regInsAsm(currentLine);
-                break;
-            case ImmIns:
-                instruction = immInsAsm(currentLine);
-                break;
-            case SpcIns:
-                instruction = spcInsAsm(currentLine);
-                break;
-            case JumpIns:
-                instruction = jumpInsAsm(currentLine, curLine);
-                break;
-            case  LoadSaveIns:
-                instruction = loadSaveInsAsm(currentLine);
-                break;
-            default:
-                instruction = errorIns;
-                break;
-        }
-        cout << "0x" << uppercase << hex << setfill('0') << setw(8) << instruction << endl;
-        if (instruction == errorIns) {
-            cout << "Line " << currentLine.getLine() << ": ";
-            fout.close();
-            return Can_not_assemble;
-        }
-        for (int i = 3; i >= 0; --i)
-            fout.write(((char *)&instruction) + i, 1);
-    }
-    fout.close();
-    return correct;
-}
-
-bool Assembler::openFile(string fileName)
+bool Assembler::openFile(string &fileName)
 {
     fin.open(fileName.c_str());
     if(fin.is_open()){
@@ -76,482 +32,160 @@ bool Assembler::openFile(string fileName)
         return false;
 }
 
-bool Assembler::isPseudo(string &opName)
+void Assembler::generateBinaryFile(string &fileName)
 {
-    static set<string> pseudo;
-    pseudo.insert("move");
-    pseudo.insert("push");
-    pseudo.insert("pop");
-    if (pseudo.find(opName) == pseudo.end())
-        return false;
-    return true;
+    try {
+        Instructions instructions;
+        InstructionSet instructionSet;
+        formation(instructions);  // 格式处理
+        getLabelTable(instructions);  // 获得labeltable
+        dealWithPseudo(instructions, instructionSet);  // 处理伪指令
+            
+        fout.open(fileName.c_str());
+        MachineCode machineCode;  // 汇编后的机器码
+        int curLineNumber = 0;  // 当前行号
+        
+        vector<Instruction *>::iterator itr = instructionSet.begin();
+        if (itr != instructionSet.end()) {      // 处理第一行的.origin
+            Instruction *firstLine = *itr;
+            if (firstLine->getOpName() == ".origin") {  // 第一行是.origin
+                base = firstLine->immatoi(0, 32, false);
+                if (base == errorIns)
+                    firstLine->printErrorInfo(Illegal_origin_address);
+                curLineNumber++;
+                itr++;
+            }
+            else base = 0;
+            cout << "0x" << uppercase << hex << setfill('0') << setw(8) << base << endl;
+            for (int i = 3; i >= 0; --i)
+                fout.write(((char *)&base) + i, 1);
+        }
+
+        for (; itr != instructionSet.end(); itr++, curLineNumber++) {
+            Instruction *curLine = *itr;
+            if (assembleInfo.insType[curLine->getOpName()] != FormatIns) {
+                machineCode = curLine->assemble(assembleInfo, labelTable, curLineNumber);
+                if (machineCode == errorIns)
+                    curLine->printErrorInfo(Can_not_assemble);
+                cout << "0x" << uppercase << hex << setfill('0') << setw(8) << machineCode << endl;
+                for (int i = 3; i >= 0; --i)
+                    fout.write(((char *)&machineCode) + i, 1);
+            }
+            else curLine->assemble(assembleInfo, fout);
+        }
+    } catch (...) {
+        if (fout.is_open())
+            fout.close();
+    }
+    if (fout.is_open())
+        fout.close();
 }
 
-ErrorInfo Assembler::formation(AssembleSet &assembleSet)
-// 格式标准化
+void Assembler::formation(Instructions &instructions)  // 格式处理
 {
-    AssembleIns assembleIns;
-    int line = 0;
-    bool mergeFlag;
-
-    AssembleIns newline;
-    AssembleLine assembleLine;
+    AssemblyCode assembleIns;  // 读入的汇编码
+    int line = 0;   // 当前行数，用于报错
+    bool mergeFlag;  // 是否需要合并（一行只有label的Ins要与下一行合并）
+    Instruction assembleLine;  // 一条指令对象
+    set<Label> labelSet;  // Label集合，用于判断label是否重复
     
     while (!fin.eof()) {
         line++;
         getline(fin, assembleIns);
         if (!assembleIns.size())    // 空行
             continue;
-        mergeFlag = false;
+        mergeFlag = false;   // 不需要合并
         assembleLine.setLine(line);
-        assembleLine.setAssembleIns(assembleIns);
-        if (!assembleLine.split()) {
-            cout << "Line " << line << ": ";    // 格式错误
-            return Wrong_formation;
-        }
+        assembleLine.setAssemblyCode(assembleIns);
+        if (!assembleLine.split())    // 将汇编码按label、opName、operand分离
+            assembleLine.printErrorInfo(Wrong_formation);
+        if (assembleLine.isEmpty())  // 空行（只有注释)
+            continue;
         if (assembleLine.hasLabel()) {  // 有label
-            if (!assembleLine.checkLabel()) {  // label有非法字符
-                cout << "Line " << line << ": ";
-                return Illegal_characters_in_label;
-            }
-            if (!assembleSet.empty())    // 不是第一行
-                if (assembleSet.back().onlyLabel()) {  // 上一行只有label，即有连续重复的label出现
-                    cout << "Line " << line << ": ";
-                    return Label_duplication;
-                }
+            if (!assembleLine.checkLabel())   // label有非法字符
+                assembleLine.printErrorInfo(Illegal_characters_in_label);
+            if (labelSet.find(assembleLine.getLabel()) != labelSet.end())    // 重复label
+                assembleLine.printErrorInfo(Redefined_label);
+            labelSet.insert(assembleLine.getLabel());  // 插入label集合
+            if (!instructions.empty())    // 不是第一行
+                if (instructions.back().onlyLabel())   // 上一行只有label，即有连续重复的label出现
+                    assembleLine.printErrorInfo(Label_duplication);
         }
-        else if (!assembleSet.empty())
-            if (assembleSet.back().onlyLabel()) {
-                assembleSet.back() =  assembleSet.back() + assembleLine;
+        else if (!instructions.empty())
+            if (instructions.back().onlyLabel()) {  // 上一行只有label，需合并
+                instructions.back() =  instructions.back() + assembleLine;
                 mergeFlag = true;
             }
-        if (!mergeFlag)
-            assembleSet.push_back(assembleLine);
+        if (!mergeFlag)  
+            instructions.push_back(assembleLine);
     }
-    /*
-    while (!fin.eof()) {
-        line++;
-        getline(fin, assembleIns);
-        if (!assembleIns.size())     // 空行
-            continue;
-        if (!labelFlag)
-            newline = "";
-        i = j = 0;
-        if (assembleIns.find(':') != string::npos)  {// 该行有label
-            if (labelFlag) {     // 重复的label
-                errorInfo << "Line " << line << ": Repeated labels"<< endl;
-                return errorInfo.str();
-            }
-            while (assembleIns.at(i) == ' ') i++;  // 过滤行首空格
-            for (; i < assembleIns.size(); i++)  {// 扫label
-                ch = assembleIns.at(i);
-                if (ch == ':')    // label结束
-                    break;
-                if (ch < 48) {   // label只允许大小写、下划线和数字
-                    errorInfo << "Line " << line << ": Illegal characters in label" << endl;
-                    return errorInfo.str();
-                }
-                if (ch > 57 && ch < 65) {
-                    errorInfo << "Line " << line << ": Illegal characters in label" << endl;
-                    return errorInfo.str();
-                }
-                if (ch > 90 && ch < 97 && ch != 95) {
-                    errorInfo << "Line " << line << ": Illegal characters in label" << endl;
-                    return errorInfo.str();
-                }
-                if (ch > 122) {
-                    errorInfo << "Line " << line << ": Illegal characters in label" << endl;
-                    return errorInfo.str();
-                }
-                newline += toLowerCase(ch);
-            }
-            newline += ": ";
-            for (i++; i < assembleIns.size() && assembleIns.at(i) == ' '; i++);  // 过滤label后空格
-            if (i == assembleIns.size()) {    // 该行只有label，没有指令
-                labelFlag = true;
-                continue;
-            }
-        }
-        insFlag = blankFlag = false;
-        for (; i < assembleIns.size(); i++) {
-            ch = assembleIns.at(i);
-            if (ch == ' ') {
-                if (insFlag && !blankFlag) {
-                    newline += ch;
-                    blankFlag = true;
-                }
-                continue;
-            }
-            insFlag = true;
-            newline += toLowerCase(ch);
-        }
-        if (insFlag) {
-            assembleLine.assembleIns = newline;
-            assembleLine.line = line;
-            assembleSet.push_back(assembleLine);
-            labelFlag = false;
-        }
-    }
-     */
-    return correct;
 }
 
-ErrorInfo Assembler::pseudoOp(AssembleSet &ASin, AssembleSet &ASout)
-// 处理伪指令
-{
-    AssembleLine newLine;
-    AssembleIns assembleIns;
-    ErrorInfo errorInfo;
-    string opName;
-    
-    for (vector<AssembleLine>::iterator asitr = ASin.begin(); asitr != ASin.end(); asitr++) {
-        AssembleLine oldLine = *asitr;
-        AssembleIns assembleIns = oldLine.getAssembleIns();
-        
-        opName = oldLine.getOpName();
-        
-        if (oldLine.islegalins())  // 有这一opName的真指令
-            ASout.push_back(oldLine);
-        else if (isPseudo(opName)) {    // 检查是否伪指令
-            if (opName == "move") {
-                errorInfo = oldLine.checkOperand(2);
-                if (errorInfo != correct) {
-                    cout << "Line " << oldLine.getLine() << ": ";
-                    return errorInfo;
-                }
-                if (oldLine.hasLabel())
-                    assembleIns = oldLine.getLabel() + ": ";
-                else assembleIns = "";
-                assembleIns = assembleIns + "add " + oldLine.getOperand(0) + "," + oldLine.getOperand(1) + ",$zero";
-                newLine.setAssembleIns(assembleIns);
-                newLine.setLine(oldLine.getLine());
-                newLine.split();
-                ASout.push_back(newLine);
-             }
-            else if (opName == "push") {
-                errorInfo = oldLine.checkOperand(1);
-                if (errorInfo != correct) {
-                    cout << "Line " << oldLine.getLine() << ": ";
-                    return errorInfo;
-                }
-                if (oldLine.hasLabel())
-                    assembleIns = oldLine.getLabel() + ": ";
-                else assembleIns = "";
-                assembleIns = assembleIns + "addi $sp,$sp,-2";
-                newLine.setAssembleIns(assembleIns);
-                newLine.setLine(oldLine.getLine());
-                newLine.split();
-                ASout.push_back(newLine);
-                assembleIns = "sw " + oldLine.getOperand(0) + ",$sp,0";
-                newLine.setAssembleIns(assembleIns);
-                newLine.setLine(oldLine.getLine());
-                newLine.split();
-                ASout.push_back(newLine);
-            }
-            else if (opName == "pop") {
-                errorInfo = oldLine.checkOperand(1);
-                if (errorInfo != correct) {
-                    cout << "Line " << oldLine.getLine() << ": ";
-                    return errorInfo;
-                }
-                if (oldLine.hasLabel())
-                    assembleIns = oldLine.getLabel() + ": ";
-                else assembleIns = "";
-                assembleIns = assembleIns + "lw " + oldLine.getOperand(0) + ",$sp,0";
-                newLine.setAssembleIns(assembleIns);
-                newLine.setLine(oldLine.getLine());
-                newLine.split();
-                ASout.push_back(newLine);
-                assembleIns = "addi $sp,$sp,2";
-                newLine.setAssembleIns(assembleIns);
-                newLine.setLine(oldLine.getLine());
-                newLine.split();
-                ASout.push_back(newLine);
-            }
-        }
-        else {
-            cout << "Line " << oldLine.getLine() << ": ";
-            return No_such_instruction_or_pseudo_instruction;
-        }
-    }
-    return correct;
-}
-
-ErrorInfo Assembler::getLabelTable(AssembleSet &assembleSet)
+void Assembler::getLabelTable(Instructions &instructions)
+//  获得labeltable
+//  labelTable[label] = addr中addr不是实际pc，而是指令行数，即pc的一半
 {
     Address addr = 0;
-    for (vector<AssembleLine>::iterator itr = assembleSet.begin(); itr != assembleSet.end(); itr++, addr++)
-    {
-        AssembleLine currentLine = *itr;
-        if (currentLine.hasLabel()) {
-            Label label = currentLine.getLabel();
-            if (labelTable.find(label) != labelTable.end()) {
-                cout << "Line " << currentLine.getLine() << ": ";
-                return Redefined_label;
-            }
+    for (vector<Instruction>::iterator itr = instructions.begin(); itr != instructions.end(); itr++) {
+        Instruction ins = *itr;
+        if (ins.hasLabel()) {
+            Label label = ins.getLabel();
+            if (labelTable.find(label) != labelTable.end())  // label重定义
+                ins.printErrorInfo(Redefined_label);
             else labelTable[label] = addr;
         }
+        addr += ins.actualLinage();
     }
-    return correct;
 }
 
-Instruction Assembler::regInsAsm(AssembleLine &assembleLine)  // 基本完善
+void Assembler::dealWithPseudo(Instructions &instructions, InstructionSet &instructionSet) // 处理伪指令
 {
-    string opName = assembleLine.getOpName();
-    Instruction ins = assembleInfo.opcode[opName];
-    
-    if (opName == "srav" || opName == "srlv") {
-        if (assembleLine.numOfOperand() != 3)
-            return errorIns;
-        ins += assembleInfo.reg[assembleLine.getOperand(0)] << 11;
-        ins += assembleInfo.reg[assembleLine.getOperand(1)] << 16;
-        ins += assembleInfo.reg[assembleLine.getOperand(2)] << 21;
-        return ins;
-    }
-    if (opName == "jalr") {
-        if (assembleLine.numOfOperand() != 2)
-            return errorIns;
-        ins += assembleInfo.reg[assembleLine.getOperand(0)] << 21;
-        ins += assembleInfo.reg[assembleLine.getOperand(1)] << 11;
-        return ins;
-    }
-    
-    vector<string> regToBeChecked;
-    regToBeChecked.push_back("RD");
-    regToBeChecked.push_back("RS");
-    regToBeChecked.push_back("RT");
-    regToBeChecked.push_back("SFT");
-    size_t count =0;
-    for (vector<string>::iterator regTypeitr = regToBeChecked.begin(); regTypeitr != regToBeChecked.end(); regTypeitr++) {
-        string regType;
-        regType = *regTypeitr;
-        if (assembleInfo.InsRegList[opName][regType])
-            count ++;
-    }
-    if (count != assembleLine.numOfOperand())
-        return errorIns;
-    int k = 0;
-    for (vector<string>::iterator regTypeitr = regToBeChecked.begin(); regTypeitr != regToBeChecked.end(); regTypeitr++) {
-        string regType = *regTypeitr;
-        if (assembleInfo.InsRegList[opName][regType]) {
-            if (k == assembleLine.numOfOperand())
+    for (vector<Instruction>::iterator itr = instructions.begin(); itr != instructions.end(); itr++) {
+        Instruction curLine = *itr;
+        OpName opName = curLine.getOpName();
+        if (assembleInfo.insType.find(opName) == assembleInfo.insType.end())
+            curLine.printErrorInfo(No_such_instruction_or_pseudo_instruction);
+        switch (assembleInfo.insType[opName]) {
+            case RegIns: {
+                Instruction *insPointer = new RegInstruction(curLine);
+                instructionSet.push_back(insPointer);
                 break;
-            Instruction regTmp = assembleInfo.reg[assembleLine.getOperand(k)];
-            if (regType == "SFT")
-                ins += regTmp << 6;
-            else if (regType == "RD")
-                ins += regTmp << 11;
-            else if (regType == "RT")
-                ins += regTmp << 16;
-            else if (regType == "RS")
-                ins += regTmp << 21;
-            k++;
+            }
+            case JumpIns: {
+                Instruction *insPointer = new JumpInstruction(curLine);
+                instructionSet.push_back(insPointer);
+                break;
+            }
+            case ImmIns: {
+                Instruction *insPointer = new ImmInstruction(curLine);
+                instructionSet.push_back(insPointer);
+                break;
+            }
+            case SpcIns: {
+                Instruction *insPointer = new SpcInstruction(curLine);
+                instructionSet.push_back(insPointer);
+                break;
+            }
+            case LoadSaveIns: {
+                Instruction *insPointer = new LoadSaveInstruction(curLine);
+                instructionSet.push_back(insPointer);
+                break;
+            }
+            case PseudoIns: {
+                Instruction *insPointer = new PseudoInstruction(curLine);
+                insPointer->translate(instructionSet, labelTable);
+                break;
+            }
+            case FormatIns: {
+                Instruction *insPointer = new FormatInstruction(curLine);
+                instructionSet.push_back(insPointer);
+                break;
+            }
+            default: {
+                curLine.printErrorInfo(No_such_instruction_or_pseudo_instruction);
+                break;
+            }
         }
     }
-    return ins;}
-
-Instruction Assembler::jumpInsAsm(AssembleLine &assembleLine, int curLine)  // 待完善
-{
-    // bgez、bgezal、bltz、bltzal、blez、bgtz待加
-    string opName = assembleLine.getOpName();
-    Instruction ins = assembleInfo.opcode[opName];
-    int imm;
-    if (opName == "j" || opName == "jal") {
-        if (assembleLine.numOfOperand() != 1)
-            return errorIns;
-        string addr = assembleLine.getOperand(0);
-        if (labelTable.find(addr) == labelTable.end()) {
-            imm = immatoi(addr, 26);
-            if (imm == errorIns)
-                return errorIns;
-            if (imm > 0x03ffffff || imm < 0)
-                return errorIns;
-        }
-        else imm = labelTable[addr] * 2;
-        ins = ins | (imm & 0x03ffffff);
-    }
-    else if (opName == "beq" || opName == "bne") {
-        if (assembleLine.numOfOperand() != 3)
-            return errorIns;
-        string addr = assembleLine.getOperand(2);
-        if (labelTable.find(addr) == labelTable.end()) {
-            imm = immatoi(addr, 16);
-            if (imm == errorIns)
-                return errorIns;
-            if (imm < -32768 || imm > 32767)
-                return errorIns;
-        }
-        else imm = (labelTable[addr] - curLine - 1) * 2;
-        if (assembleInfo.InsRegList[opName]["RS"])
-            ins = ins | (assembleInfo.reg[assembleLine.getOperand(0)] << 21);
-        if (assembleInfo.InsRegList[opName]["RT"])
-            ins = ins | (assembleInfo.reg[assembleLine.getOperand(1)] << 16);
-        ins = ins | (imm & 0x0000ffff);
-    }
-    else {
-        if (assembleLine.numOfOperand() != 2)
-            return errorIns;
-        string addr = assembleLine.getOperand(1);
-        if (labelTable.find(addr) == labelTable.end()) {
-            imm = immatoi(addr, 16);
-            if (imm == errorIns)
-                return errorIns;
-            if (imm < -32768 || imm > 32767)
-                return errorIns;
-        }
-        else imm = (labelTable[addr] - curLine - 1) * 2;
-        if (opName == "bgez")
-            ins |= 1 << 16;
-        else if (opName == "bgezal")
-            ins |= 17 << 16;
-        else if (opName == "bltzal")
-            ins |= 16 << 16;
-        ins |= assembleInfo.reg[assembleLine.getOperand(0)] << 21;
-        ins |= imm & 0x0000ffff;
-    }
-    return ins;
 }
-
-Instruction Assembler::immInsAsm(AssembleLine &assembleLine)  // 基本完善
-{
-    // lui仅有一个寄存器操作数
-    string opName = assembleLine.getOpName();
-    Instruction ins = assembleInfo.opcode[opName];
-    int imm;
-    if (opName == "lui") {   // lui指令仅有RT寄存器
-        if (assembleLine.numOfOperand() != 2)
-            return errorIns;
-        imm = immatoi(assembleLine.getOperand(1), 16);
-        if (imm == errorIns)
-            return errorIns;
-     //   if (imm < -32768 || imm > 32767)
-       //     return errorIns;
-        ins |= assembleInfo.reg[assembleLine.getOperand(0)] << 16;
-        ins |= imm & 0x0000ffff;
-    }
-    else {   // 其余有RT、RS寄存器
-        if (assembleLine.numOfOperand() != 3)
-            return errorIns;
-        imm = immatoi(assembleLine.getOperand(2), 16);
-        if (imm == errorIns)
-            return errorIns;
-        ins |= assembleInfo.reg[assembleLine.getOperand(0)] << 16;
-        ins |= assembleInfo.reg[assembleLine.getOperand(1)] << 21;
-        if (opName == "andi" || opName == "ori" || opName == "xori") {  // 0扩展
-            if (imm > 65535)
-                return errorIns;
-            unsigned unimm = (unsigned)imm;
-            ins |= unimm & 0x0000ffff;
-        }
-        else {
-            if (imm < -32768 || imm > 32767)  // 符号位扩展
-                return errorIns;
-            ins |= imm & 0x0000ffff;
-        }
-    }
-    return ins;
-}
-
-Instruction Assembler::spcInsAsm(AssembleLine &assembleLine)  // 基本完善
-{
-    string opName = assembleLine.getOpName();
-    Instruction ins = assembleInfo.opcode[opName];
-    
-    if (opName == "mul") {  // mul 有3个操作数   ???
-        if (assembleLine.numOfOperand() != 3)
-            return errorIns;
-        ins |= assembleInfo.reg[assembleLine.getOperand(0)] << 11;
-        ins |= assembleInfo.reg[assembleLine.getOperand(1)] << 21;
-        ins |= assembleInfo.reg[assembleLine.getOperand(2)] << 16;
-        ins |= 2;
-    }
-    else if (opName == "eret") {
-        if (assembleLine.numOfOperand() != 0)  // eret无操作数
-            return errorIns;
-        ins |= 16 << 21;
-        ins |= 0x18;
-    }
-    else {
-        if (assembleLine.numOfOperand() != 2)
-            return errorIns;
-        ins |= assembleInfo.reg[assembleLine.getOperand(0)] << 21;
-        ins |= assembleInfo.reg[assembleLine.getOperand(1)] << 16;
-    }
-    return ins;
-}
-
-Instruction Assembler::loadSaveInsAsm(AssembleLine &assembleLine)  // 待完善
-{
-    string opName = assembleLine.getOpName();
-    Instruction ins = assembleInfo.opcode[opName];
-    int offset;
-    
-    if (assembleLine.numOfOperand() == 3) {
-        offset = immatoi(assembleLine.getOperand(2), 16);
-        if (offset == errorIns)
-            return errorIns;
-    //    if (offset < -32768 || offset > 32767)
-      //      return errorIns;
-        ins |= assembleInfo.reg[assembleLine.getOperand(0)] << 16;
-        ins |= assembleInfo.reg[assembleLine.getOperand(1)] << 21;
-        ins |= offset & 0x0000ffff;
-    }
-    else if (assembleLine.numOfOperand() == 2) {   // LW $S1,LABEL?? 暂不考虑
-        return errorIns;
-    }
-    else return errorIns;
-    return ins;
-}
-
-int Assembler::immatoi(string immStr, int bits)
-{
-    int i = 0, radix = 10;
-    bool isNegative = false;
-    if (immStr.at(0) == '-') {
-        i++;
-        isNegative = true;
-    }
-    if (immStr.size() == i)
-        return errorIns;
-    if (immStr.at(i) == 'b') {
-        i++;
-        radix = 2;
-    }
-    else if (immStr.at(i) == '#') {
-        i++;
-        radix = 10;
-    }
-    else if (immStr.size() > i + 1)
-        if (immStr.at(i) == '0' && immStr.at(i + 1) == 'x') {
-            i += 2;
-            radix = 16;
-        }
-    if (immStr.size() == i)
-        return errorIns;
-    int imm = 0;
-    for (; i < immStr.size(); i++) {
-        if (immStr.at(i) >= '0' && immStr.at(i) <= '9')
-            imm = imm * radix + immStr.at(i) - '0';
-        else if (immStr.at(i) >= 'a' && immStr.at(i) <= 'f')
-            imm = imm * radix + immStr.at(i) - 'f';
-        else return errorIns;
-    }
-    if (radix != 10) {
-        if (imm >= 2 << bits) {
-            return errorIns;
-        }
-    }
-    if (isNegative)
-        return -imm;
-    else return imm;
-}
-
-
-
-
-
-
-
-
-
 
