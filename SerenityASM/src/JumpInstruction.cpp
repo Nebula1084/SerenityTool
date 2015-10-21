@@ -33,8 +33,8 @@ MachineCode JumpInstruction::assemble(AssembleInfo &assembleInfo, map<Label, Add
             if (imme == errorIns)
                 printErrorInfo(Wrong_immediate_number_or_offset);
         }
-        else imme = labelTable[addr] * 2 + base;
-        ins |= imme;
+        else imme = labelTable[addr] / 2;
+        ins |= (imme & 0x03ffffff);
     }
     else if (opName == "beq" || opName == "bne") { // beq rs,rt,imme
         if (numOfOperand() != 3)
@@ -54,7 +54,7 @@ MachineCode JumpInstruction::assemble(AssembleInfo &assembleInfo, map<Label, Add
         }
         ins |= assembleInfo.reg[getOperand(0)] << 21;
         ins |= assembleInfo.reg[getOperand(1)] << 16;
-        ins |= imme;
+        ins |= (imme & 0x0000ffff);
     }
     else {
         // bltz、bgtz、blez、bgez、blezal、bgezal
@@ -75,7 +75,7 @@ MachineCode JumpInstruction::assemble(AssembleInfo &assembleInfo, map<Label, Add
                 printErrorInfo(Wrong_immediate_number_or_offset);
         }
         ins |= assembleInfo.reg[getOperand(0)] << 21;
-        ins |= imme;
+        ins |= (imme & 0x0000ffff);
     }
     return ins;
 }

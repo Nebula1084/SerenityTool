@@ -14,8 +14,6 @@
 #include "CommonTypedef.hpp"
 #include "AssembleInfo.hpp"
 
-using namespace std;
-
 class Instruction
 {
 protected:

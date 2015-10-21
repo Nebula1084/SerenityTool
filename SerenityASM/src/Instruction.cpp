@@ -500,6 +500,12 @@ int Instruction::actualLinage()   // 伪指令实际行数
         }
         return linage;
     }
+    if (opName == ".space") {
+        int linage = immatoi(0);
+        if (linage == errorIns)
+            printErrorInfo(Wrong_immediate_number_or_offset);
+        return linage;
+    }
     return 1;
 }
 
@@ -537,9 +543,20 @@ int Instruction::immatoi(int n, int len, bool issigned)
         radix = 2;
         start = 1;
     }
-    else if (imma.at(0) == '0' && imma.at(1) == 'x') {  // 0xn
-        radix = 16;
-        start = 2;
+    else if (imma.at(0) == '0') {
+        if (imma.size() > 1)
+            if (imma.at(1) == 'x') {// 0xn
+                radix = 16;
+                start = 2;
+            }
+            else {
+                radix = 10;
+                start = 1;
+            }
+            else {
+                radix = 10;
+                start = 1;
+            }
     }
     else if (imma.at(0) >= '0' && imma.at(0) <= '9') {  // n
         radix = 10;

@@ -484,4 +484,5 @@ AssembleInfo::AssembleInfo(){
     insType[".origin"] = FormatIns;
     insType[".asciiz"] = FormatIns;
     insType[".2byte"] = FormatIns;
+    insType[".space"] = FormatIns;
 }

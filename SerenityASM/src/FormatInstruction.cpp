@@ -41,6 +41,13 @@ void FormatInstruction::assemble(AssembleInfo &assembleInfo, ofstream &fout)
             else print(immatoi(str.substr(4, str.size() - 4)), fout);
         }
     }
+    else if (opName == ".space")  {//
+        int num = immatoi(0);
+        if (num == errorIns)
+            printErrorInfo(Wrong_immediate_number_or_offset);
+        for (int i = 0; i < num; i++)
+            print(0, fout);
+    }
 }
 
 void FormatInstruction::print(MachineCode machineCode, ofstream &fout)

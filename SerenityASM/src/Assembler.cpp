@@ -52,6 +52,8 @@ void Assembler::generateBinaryFile(string &fileName)
                 base = firstLine->immatoi(0, 32, false);
                 if (base == errorIns)
                     firstLine->printErrorInfo(Illegal_origin_address);
+                if ((errorIns & 1) == 1)
+                    firstLine->printErrorInfo(Illegal_origin_address);
                 curLineNumber++;
                 itr++;
             }
@@ -73,7 +75,7 @@ void Assembler::generateBinaryFile(string &fileName)
             }
             else curLine->assemble(assembleInfo, fout);
         }
-    } catch (...) {
+    } catch (Instruction ins) {
         if (fout.is_open())
             fout.close();
     }
@@ -188,4 +190,3 @@ void Assembler::dealWithPseudo(Instructions &instructions, InstructionSet &instr
         }
     }
 }
-
