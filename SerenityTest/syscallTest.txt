@@ -1,0 +1,7 @@
+.ORIGIN 00000000
+        mul $t0, $ra, $t5
+        addi $sp, $zero, 0x1000
+        addi $a0, $zero, 2
+        syscall
+this:
+        beq $zero, $zero, this

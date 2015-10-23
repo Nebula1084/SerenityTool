@@ -52,7 +52,7 @@ void Assembler::generateBinaryFile(string &fileName)
                 base = firstLine->immatoi(0, 32, false);
                 if (base == errorIns)
                     firstLine->printErrorInfo(Illegal_origin_address);
-                if ((errorIns & 1) == 1)
+                if ((base & 1) == 1)
                     firstLine->printErrorInfo(Illegal_origin_address);
                 curLineNumber++;
                 itr++;
@@ -88,7 +88,7 @@ void Assembler::formation(Instructions &instructions)  // 格式处理
     AssemblyCode assembleIns;  // 读入的汇编码
     int line = 0;   // 当前行数，用于报错
     bool mergeFlag;  // 是否需要合并（一行只有label的Ins要与下一行合并）
-    Instruction assembleLine;  // 一条指令对象
+    Instruction *assembleLine;  // 一条指令对象
     set<Label> labelSet;  // Label集合，用于判断label是否重复
     
     while (!fin.eof()) {
@@ -97,29 +97,30 @@ void Assembler::formation(Instructions &instructions)  // 格式处理
         if (!assembleIns.size())    // 空行
             continue;
         mergeFlag = false;   // 不需要合并
-        assembleLine.setLine(line);
-        assembleLine.setAssemblyCode(assembleIns);
-        if (!assembleLine.split())    // 将汇编码按label、opName、operand分离
-            assembleLine.printErrorInfo(Wrong_formation);
-        if (assembleLine.isEmpty())  // 空行（只有注释)
+        assembleLine = new Instruction;
+        assembleLine->setLine(line);
+        assembleLine->setAssemblyCode(assembleIns);
+        if (!assembleLine->split())    // 将汇编码按label、opName、operand分离
+            assembleLine->printErrorInfo(Wrong_formation);
+        if (assembleLine->isEmpty())  // 空行（只有注释)
             continue;
-        if (assembleLine.hasLabel()) {  // 有label
-            if (!assembleLine.checkLabel())   // label有非法字符
-                assembleLine.printErrorInfo(Illegal_characters_in_label);
-            if (labelSet.find(assembleLine.getLabel()) != labelSet.end())    // 重复label
-                assembleLine.printErrorInfo(Redefined_label);
-            labelSet.insert(assembleLine.getLabel());  // 插入label集合
+        if (assembleLine->hasLabel()) {  // 有label
+            if (!assembleLine->checkLabel())   // label有非法字符
+                assembleLine->printErrorInfo(Illegal_characters_in_label);
+            if (labelSet.find(assembleLine->getLabel()) != labelSet.end())    // 重复label
+                assembleLine->printErrorInfo(Redefined_label);
+            labelSet.insert(assembleLine->getLabel());  // 插入label集合
             if (!instructions.empty())    // 不是第一行
                 if (instructions.back().onlyLabel())   // 上一行只有label，即有连续重复的label出现
-                    assembleLine.printErrorInfo(Label_duplication);
+                    assembleLine->printErrorInfo(Label_duplication);
         }
         else if (!instructions.empty())
             if (instructions.back().onlyLabel()) {  // 上一行只有label，需合并
-                instructions.back() =  instructions.back() + assembleLine;
+                instructions.back() =  instructions.back() + *assembleLine;
                 mergeFlag = true;
             }
         if (!mergeFlag)  
-            instructions.push_back(assembleLine);
+            instructions.push_back(*assembleLine);
     }
 }
 

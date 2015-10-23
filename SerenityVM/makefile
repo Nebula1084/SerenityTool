@@ -1,6 +1,5 @@
 MipsSimulator : main.o MipsCPU.o MemoryManageUnit.o
 	g++ main.o MipsCPU.o MemoryManageUnit.o -o SerenityVM
-	del *.o
 main.o:
 	g++ src/main.cpp -c -Wall -Iinclude
 MipsCPU.o: 

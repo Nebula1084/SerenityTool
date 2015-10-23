@@ -1,0 +1,24 @@
+RegIns 类型的指令{
+    Func 为 0000xx格式为 rd,rt,sft;
+    Func 为 0001xx格式为 rd,rt,rs;
+    Func 为 001xxx不太有规律,包括jr,jalr,break;
+    Func 为 010xxx不太有规律,包括mfhi,mthi,mflo,mtlo;
+    Func 为 011xxx格式为 rs,rt;
+    Func 为 10xxxx格式为 rd,rs,rt;
+}
+
+JumpIns 类型的指令{
+    op = 6'b000001的格式为rs,Label, 这包括bgez,bgezal,bltz,bltzal;
+    j和jal只有一个Lable;
+    beq 和 bne 格式为 rs,rt,Label;
+    blez 和bgtz格式为 rs,Label;
+}
+
+ImmIns 类型的指令{
+    lui格式为 rt,imm;
+    其余全是 rt,rs,imm;
+}
+
+SpecIns 类型的指令都不太有规律;
+
+LoadSaveIns 类型的格式全都为 rt,D(rs);

@@ -1,0 +1,45 @@
+.ORIGIN 0x8000
+        push $t0
+        push $t1
+        push $t2
+        push $s0
+        push $a0
+        mfc0 $t0, $c0
+        push $t0        #push EPC
+
+        mfc0 $t1, $c1   #$t1 = Cause
+
+        mfc0 $t0, $c2   #$t0 = State
+        lui  $t2, 0xFFFF
+        ori  $t2, $t2, 0xFFFD
+        and  $t0, $t0, $t2
+        ori  $t0, $t0, 1
+        mtc0 $t0, $c2   #State = State[31:2],2'b01 #enable interrupt
+
+
+        beq  $t1, $zero, DOSOMETHING
+        beq  $zero, $zero, END
+DOSOMETHING:
+        slt  $t0, $zero, $a0 
+        beq  $t0, $zero, END
+        addi $s0, $a0, 0xc00
+        addi $t0, $a0, 0x30
+        sh   $t0, 0($s0)
+        addi $a0, $a0, -1
+        syscall
+
+
+END:
+        mfc0 $t0, $c2       #$t0 = State 
+        lui  $t2, 0xFFFF
+        ori  $t2, $t2, 0xFFFE
+        and  $t0, $t0, $t2 
+        mtc0 $t0, $c2       #disable interrupt
+        pop  $t0    #pop EPC
+        mtc0 $t0, $c0
+        pop  $a0
+        pop  $s0
+        pop  $t2
+        pop  $t1
+        pop  $t0
+        eret

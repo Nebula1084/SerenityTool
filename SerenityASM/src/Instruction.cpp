@@ -13,7 +13,12 @@
 #include <fstream>
 
 Instruction::Instruction(AssemblyCode instruction, int lineNumber): assemblyCode(instruction), line(lineNumber)
-{}
+{
+    operand.clear();
+    line = 0;
+    assemblyCode = "";
+    opName = "";
+}
 
 Instruction::Instruction(Instruction const &instruction)
 {
@@ -172,6 +177,8 @@ void Instruction::rskip(int &pos)  // 反向过滤
 
 bool Instruction::split()
 {
+    operand.clear();
+    
     if (assemblyCode.find('#') != string::npos) {  // 有注释，去注释
         unsigned long start = assemblyCode.find_first_of('#');
         assemblyCode = assemblyCode.erase(start, assemblyCode.size() - start);
@@ -207,8 +214,6 @@ bool Instruction::split()
     }
     if (assemblyCode.at(i) == ',')   // 指令类型和操作数间出现逗号
         return false;
-
-    operand.clear();
     
     if (opName == ".2byte") { // 格式指令特殊处理
         bool quote = false;   // 双引号是否已配对

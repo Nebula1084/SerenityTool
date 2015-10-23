@@ -148,7 +148,7 @@ AssembleInfo::AssembleInfo(){
     coreg["$c29"] = 29;
     coreg["$c30"] = 30;
     coreg["$c31"] = 31;
-    coreg["c32"] = 32;
+    coreg["$c32"] = 32;
     
     /*
     //rd
