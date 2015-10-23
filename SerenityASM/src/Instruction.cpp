@@ -156,6 +156,8 @@ char Instruction::toLowerCase(char ch)
 {
     if (ch <= 'Z' && ch >= 'A')
         return ch - 'A' + 'a';
+    if (ch == '\t')
+        return ' ';
     return ch;
 }
 
@@ -197,9 +199,11 @@ bool Instruction::split()
     if (i >= assemblyCode.size())    // 只有label
         return true;
     skip(i);
+    if (i >= assemblyCode.size())    // 只有label
+        return true;
     
     opName = "";
-    for (; i < assemblyCode.size() && assemblyCode.at(i) != ' '; i++) // 获得opName
+    for (; i < assemblyCode.size() && assemblyCode.at(i) != ' ' && assemblyCode.at(i) != '\t'; i++) // 获得opName
         opName += toLowerCase(assemblyCode.at(i));
     if (i >= assemblyCode.size()) {   // 只有指令类型，无操作数
         if (opName != "eret" && opName != "syscall")  // 且不是eret或syscall指令

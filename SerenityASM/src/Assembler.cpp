@@ -147,7 +147,9 @@ void Assembler::dealWithPseudo(Instructions &instructions, InstructionSet &instr
         Instruction curLine = *itr;
         OpName opName = curLine.getOpName();
         if (assembleInfo.insType.find(opName) == assembleInfo.insType.end())
-            curLine.printErrorInfo(No_such_instruction_or_pseudo_instruction);
+            if (opName != "")
+                curLine.printErrorInfo(No_such_instruction_or_pseudo_instruction);
+        if (opName != "")
         switch (assembleInfo.insType[opName]) {
             case RegIns: {
                 Instruction *insPointer = new RegInstruction(curLine);
