@@ -33,7 +33,7 @@ MachineCode JumpInstruction::assemble(AssembleInfo &assembleInfo, map<Label, Add
             if (imme == errorIns)
                 printErrorInfo(Wrong_immediate_number_or_offset);
         }
-        else imme = labelTable[addr] / 2;
+        else imme = labelTable[addr];
         ins |= (imme & 0x03ffffff);
     }
     else if (opName == "beq" || opName == "bne") { // beq rs,rt,imme
@@ -48,7 +48,7 @@ MachineCode JumpInstruction::assemble(AssembleInfo &assembleInfo, map<Label, Add
                 printErrorInfo(Wrong_immediate_number_or_offset);
         }
         else {
-            imme = (labelTable[addr] - actualLine - 1) * 2;
+            imme = (labelTable[addr] - actualLine - 1);
             if (imme < -32768 || imme > 32767)  // imme 是否过大
                 printErrorInfo(Wrong_immediate_number_or_offset);
         }
@@ -70,7 +70,7 @@ MachineCode JumpInstruction::assemble(AssembleInfo &assembleInfo, map<Label, Add
                 printErrorInfo(Wrong_immediate_number_or_offset);
         }
         else {
-            imme = (labelTable[addr] - actualLine - 1) * 2;
+            imme = (labelTable[addr] - actualLine - 1);
             if (imme < -32768 || imme > 32767)  // imme 是否过大
                 printErrorInfo(Wrong_immediate_number_or_offset);
         }
