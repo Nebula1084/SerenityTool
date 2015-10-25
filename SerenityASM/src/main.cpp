@@ -18,8 +18,15 @@ int main(int argc, const char * argv[])
     
     Assembler assembler;
     string fileName;
-    cout << "enter your file name:" << endl;
-    cin >> fileName;
+    if (argc<2)
+		cout << "Please enter correct parameters" << endl;    	
+	for (int i = 1; i < argc; ++i) {
+		if (argv[i] == string("-p")){
+			
+		} else {
+			fileName = argv[i];
+		}
+	}	
     if (!assembler.openFile(fileName))
         cout << "Can't open" << endl;
     else cout << "Open file successfully" << endl;

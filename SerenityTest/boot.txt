@@ -1,9 +1,16 @@
-lw $s0,18($zero)
-lw $s1,22($zero)
-lw $t0,20($zero)
-lh $s2,0($s1)
-beq $s2,$zero,-5
-sh $s2,0($s0)
-add $s1,$s1,$t0
-add $s0,$s0,$t0
-j 3
+		addi 	$s0, $zero, 0x3000
+		addi	$s1, $zero, 0x41
+		addi	$t0, $zero, 0x10
+#		j		loop
+#L1:		addi	$s1, $s1, 1
+#		addi	$t0, $t0, -1
+#		beq		$t0, $zero, loop
+#		j		loop
+#		addi	$t0, $zero, 0x10
+loop:	sw		$s1, 0($s0)
+		addi	$s0, $s0, 1
+		addi	$s1, $s1, 1
+		addi	$t0, $t0, -1
+		beq		$t0, $zero, exit
+		j		loop
+exit:
