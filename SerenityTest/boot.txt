@@ -1,16 +1,10 @@
-		addi 	$s0, $zero, 0x3000
+L1:		addi 	$s0, $zero, 0x3010
 		addi	$s1, $zero, 0x41
 		addi	$t0, $zero, 0x10
-#		j		loop
-#L1:		addi	$s1, $s1, 1
-#		addi	$t0, $t0, -1
-#		beq		$t0, $zero, loop
-#		j		loop
-#		addi	$t0, $zero, 0x10
-loop:	sw		$s1, 0($s0)
+loop:	sh		$s1, 0($s0)
 		addi	$s0, $s0, 1
 		addi	$s1, $s1, 1
 		addi	$t0, $t0, -1
 		beq		$t0, $zero, exit
 		j		loop
-exit:
+exit:	j		L1

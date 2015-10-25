@@ -65,3 +65,7 @@ void MemoryManageUnit::print(){
     }
     // printf("time = %f\n", time);
 }
+
+short MemoryManageUnit::getData(int adr){
+    return memory[adr];
+}

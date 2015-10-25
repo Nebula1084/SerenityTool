@@ -7,6 +7,7 @@
 #define MMU_SIZE 0x5000
 #define VMADR 0x3000
 #define SYSADR 0x4000
+#define TVTADR 0x4500
 #define INTADR 0x4600
 #define IVTADR 0x4B00
 #define INTENTRY 0x4F00
@@ -20,6 +21,7 @@ public:
 	void boot(ifstream &fin);
 	void printReg();
 	void run();
+	void setDebug(bool d);
 private:
 	int rgf[32];
 	int cpf[32];
@@ -27,6 +29,7 @@ private:
 	int PC;
 	int IR;
 	int	op, rd, rs, rt, sft, fun, dat, adr;
+	bool debug;
 	string operation;
 	bool chkInt();
 };

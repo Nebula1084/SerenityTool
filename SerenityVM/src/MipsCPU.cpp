@@ -11,10 +11,12 @@ MipsCPU::MipsCPU(): MMU( MMU_SIZE, VMADR){
 	rgf[0]=0;	//$zero
 	PC=0;
 	MMU.print();
+	debug=false;
 }
 
 void MipsCPU::boot(ifstream &fin)
 {
+	for (int i=0; i<4; i++) fin.get();
 	for(int i = 0; !fin.eof(); ++i){
 		unsigned short byte = 0;
 		byte = byte | (fin.get() << 8);
@@ -135,8 +137,19 @@ void MipsCPU::run(){
 		}
 		MMU.print();
 		c = 'r';
-		// c = getch();
-		// printReg();
+		if (debug){
+			c = getch();
+			if (c == 'm'){
+				int showAdr;			
+				scanf("%x", &showAdr);				
+				while (getch() != 'q' && showAdr < MMU_SIZE){
+					cout << "0x" << setw(8) << showAdr << ":" << setw(4) <<MMU.getData(showAdr) << endl;
+					showAdr++;
+				}
+			} else {
+				printReg();	
+			}			
+		}
 	}//end_for
 }
 
@@ -185,4 +198,8 @@ void MipsCPU::printReg(){
 		cout << "sp:0x" << setw(8) << rgf[29] << "\t";
 		cout << "fp:0x" << setw(8) << rgf[30] << "\t";
 		cout << "ra:0x" << setw(8) << rgf[31] << "\t" << endl;
+}
+
+void MipsCPU::setDebug(bool d){
+	debug = d;
 }

@@ -11,8 +11,8 @@ int main(int argc, char const *argv[])
 	if (argc<2)
 		cout << "Please enter correct parameters" << endl;
 	for (int i = 1; i < argc; ++i) {
-		if (argv[i] == string("-p")){
-			
+		if (argv[i] == string("-d")){
+			mipsCPU.setDebug(true);
 		} else {
 			strcpy(fileName, argv[i]); 
 		}

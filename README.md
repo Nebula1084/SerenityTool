@@ -23,7 +23,7 @@ currently, our VM only could execute following instructions:<br>
 ##Usage##
 The Virtual machine could be used in following way.<br>
 `SerenityVM.exe file`<br>
-For instance, insrtuction `SerenityVM.exe boot.bit` would execute the binary file `boot.bit`.
+For instance, insrtuction `SerenityVM.exe boot.bit` would execute the binary file `boot.bit`. And the using option `-d` could specify the debug mode, like `SerenityVM.exe -d boot.bit`.
 ##Display##
 the Serenity VM support simple text mode, which support all `Zhe standard code`. The memory whose address is after `0x3000` is video memory, where we could write code and the screen would display correspondent character. By the way, the program could not exit but could be halted by `ctrl+c`.
 

@@ -25,6 +25,7 @@ public:
 	bool adrChk(int adr);
 	void print();
 	bool refresh;
+	short getData(int adr);
 private:
 	int size;
 	int CRTadr;//the beginning address of display memory
