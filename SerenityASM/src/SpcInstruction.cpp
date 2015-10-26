@@ -45,7 +45,7 @@ MachineCode SpcInstruction::assemble(AssembleInfo &assembleInfo, map<Label, Addr
         if (!islegalcoreg(1))  // 第二个是协寄存器
             printErrorInfo(No_such_coregister);
         ins |= assembleInfo.reg[getOperand(0)] << 16;
-        ins |= assembleInfo.reg[getOperand(1)] << 21;
+        ins |= assembleInfo.coreg[getOperand(1)] << 11;
     }
     return ins;
 }
