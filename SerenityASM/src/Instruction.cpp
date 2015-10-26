@@ -487,9 +487,7 @@ int Instruction::actualLinage()   // 伪指令实际行数
     if (opName == "abs" || opName == "swap" || opName == "sne" || opName == "seq")
         return 3;
     if (opName == "li" || opName == "la") {
-        if (immatoi(1) != errorIns)
-            return 1;
-        else return 2;
+        return 2;
     }
     if (opName == ".asciiz") {
         int linage = 0;

@@ -27,9 +27,20 @@ void FormatInstruction::assemble(AssembleInfo &assembleInfo, ofstream &fout)
     else if (opName == ".asciiz") {  // 字符串，以0结尾
         for (vector<AssemblyCode>::iterator itr = operand.begin(); itr != operand.end(); itr++) {
             AssemblyCode str = *itr;
-            for (int i = 0; i < str.size(); i++)
-                print(str.at(i) - '\0', fout);
-            print(0, fout);
+            for (int i = 0; i < str.size() / 2; i++) {
+                MachineCode strCode;
+                strCode = str.at(2 * i) - '\0';
+                strCode = strCode << 16;
+                strCode = strCode | (str.at(2 * i + 1) - '\0');
+                print(strCode, fout);
+            }
+            if (str.size() % 2 == 0)
+                print(0, fout);
+            else {
+                MachineCode strCode;
+                strCode = str.at(str.size() - 1) << 16;
+                print(strCode, fout);
+            }
         }
     }
     else if (opName == ".2byte") {  // 2字节变量
