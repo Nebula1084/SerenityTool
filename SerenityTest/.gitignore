@@ -1,4 +1,3 @@
-*.o
 *.exe
 *.bit
-*.tmp
+!.gitignore

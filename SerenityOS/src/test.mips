@@ -1,0 +1,6 @@
+.ORIGIN 0x0
+		addi	$sp, $zero, 0x2FFE #initial the stack pointer
+		add		$v0, $zero, $zero
+	 	addi	$a0, $a0, 0x41
+		syscall
+exit:	j	exit

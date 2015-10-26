@@ -1,0 +1,12 @@
+.ORIGIN 0x4600
+        push    $ra
+        push    $t0
+        add     $t0, $v0, $v0           
+        addi    $t0, $t0, 0x4500        #caculate the vector address
+        lw      $t0, 0($t0)
+        jalr    $t1, $ra                #enter system trap
+
+END:
+        pop     $t0
+        pop     $ra
+        jr      $ra

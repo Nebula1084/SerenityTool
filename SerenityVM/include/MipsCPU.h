@@ -5,6 +5,7 @@
 #include <fstream>
 
 #define MMU_SIZE 0x5000
+#define INITSP 0x2FFE
 #define VMADR 0x3000
 #define SYSADR 0x4000
 #define TVTADR 0x4500

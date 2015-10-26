@@ -1,5 +1,7 @@
-#ifndef __REGNAME__
-#define __REGNAME__
+#ifndef __SYSPARA__
+#define __SYSPARA__
+
+#include <string>
 
 //register file in coprocessor
 #define $EPC 0
@@ -39,5 +41,9 @@
 
 //interupt number
 #define $SYSCALL 0
+
+class SysPara {
+	const static std::string reg[];
+};
 
 #endif
