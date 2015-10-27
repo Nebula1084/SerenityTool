@@ -103,6 +103,7 @@ int main(int argc, char const *argv[]){
     }
     if (!fout.is_open()){
         cout << "No output file!!!" << endl;
+        return 1;
     }
 
     while(fins.size()){
