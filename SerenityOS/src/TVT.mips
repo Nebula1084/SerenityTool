@@ -1,3 +1,4 @@
 .ORIGIN 0x4500
 		.2byte 0x4000
 		.2byte 0x4100
+		.2byte 0x4200

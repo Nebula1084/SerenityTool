@@ -1,10 +1,18 @@
-L1:		addi 	$s0, $zero, 0x3010
-		addi	$s1, $zero, 0x41
-		addi	$t0, $zero, 0x10
-loop:	sh		$s1, 0($s0)
-		addi	$s0, $s0, 1
-		addi	$s1, $s1, 1
-		addi	$t0, $t0, -1
-		beq		$t0, $zero, exit
-		j		loop
-exit:	j		L1
+.ORIGIN 0x0
+		addi	$sp, $zero, 0x2FFE #initial the stack pointer
+		addi	$v0, $zero, 1
+		la		$t0, str
+		add		$a0, $zero, $t0
+		addi	$a1, $zero, 0x07
+		syscall
+		
+		add		$v0, $zero, $zero
+	 	addi	$a0, $zero, 0x41
+		addi	$a1, $zero, 0x02
+		syscall
+
+		
+exit:	j	exit
+
+str:	.asciiz "example"
+str2:	.2byte "example",2,51

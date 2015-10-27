@@ -17,7 +17,7 @@ int main(int argc, char const *argv[])
 			strcpy(fileName, argv[i]); 
 		}
 	}	
-	ifstream fin(fileName);
+	ifstream fin(fileName, ios_base::binary);
 	while(!fin.is_open()){
 		cout << "Open Error!" << endl;
 		cout << "Please input binary file name:" << endl;
@@ -25,6 +25,7 @@ int main(int argc, char const *argv[])
 		fin.open(fileName);
 	}
 	mipsCPU.boot(fin);	
-	mipsCPU.run();	
+	mipsCPU.run();
+	fin.close();
 	return 0;
 }
