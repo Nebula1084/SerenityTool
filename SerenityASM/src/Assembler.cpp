@@ -43,7 +43,7 @@ void Assembler::generateBinaryFile(string &fileName)
         
         //cout << labelTable["exit"] << endl;
         
-        fout.open(fileName.c_str());
+        fout.open(fileName.c_str(), ios_base::binary);
         MachineCode machineCode;  // 汇编后的机器码
         int curLineNumber = 0;  // 当前行号
         

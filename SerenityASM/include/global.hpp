@@ -9,6 +9,10 @@
 #ifndef global_hpp
 #define global_hpp
 
+#include "CommonTypedef.hpp"
+#include <map>
+
 extern unsigned int base;
+extern map<string, MachineCode> equTable;
 
 #endif /* global_hpp */
