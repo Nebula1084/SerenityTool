@@ -1,10 +1,16 @@
 .ORIGIN 0x0
 		addi	$sp, $zero, 0x2FFE #initial the stack pointer
-		addi	$v0, $zero, 2		
+		
+		la		$a0, str
+		addi	$v0, $zero, 1
+		addi	$a1, $zero, 5
+		syscall
+		
+		addi	$v0, $zero, 2
 		addi	$a0, $zero, 0x43
 		addi	$a1, $zero, 7
 		addi	$a2, $zero, 10
-		syscall		
+		syscall				
 		
 		add		$v0, $zero, $zero
 	 	addi	$a0, $zero, 0x41

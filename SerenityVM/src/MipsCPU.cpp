@@ -34,8 +34,7 @@ void MipsCPU::run(){
 		if (chkInt()) {
 			cpf[$EPC] = PC;
 			cpf[$STATE] = cpf[$STATE] & 0xFFFFFFFE;
-			PC = INTENTRY;
-			cout << PC << endl;
+			PC = INTENTRY;			
 		}		
 		IR=MMU.lw(PC);		
 		PC+=2;						//16-bit/byte
