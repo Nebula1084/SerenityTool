@@ -54,7 +54,7 @@ void Assembler::generateBinaryFile(string &fileName)
                     firstLine->printErrorInfo(Illegal_origin_address);
                 if ((base & 1) == 1)
                     firstLine->printErrorInfo(Illegal_origin_address);
-                curLineNumber++;
+   //             curLineNumber++;
                 itr++;
             }
             else base = 0;
