@@ -17,7 +17,7 @@
 		ori     $t0, $t0, 1
 		mtc0    $t0, $c2        #State = State[31:2],2'b01 #enable interrupt
 		
-		add     $t1, $t1, $t1
+		add     $t1 , $v0, $v0
 		addi    $t1, $t1, 0x4B00        #interrupt vector address
 		lw		$t1, 0($t1)	
 		jalr	$t1, $ra				#enter interrupt service

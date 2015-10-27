@@ -38,3 +38,7 @@ bin\printstr.bit: src\printstr.mips
 bin\test.bit: src\test.mips
 	$(SASM) src\test.mips
 	mv src\test.bit bin\test.bit
+	
+.PHONY: clean
+clean:
+	rm bin\*.bit rm *.bit

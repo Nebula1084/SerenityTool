@@ -2,7 +2,7 @@
 
 #include "SysPara.h"
 
-const std::string reg[32] = {
+const std::string SysPara::rgNm[32] = {
 	"$zero",
 	"",
 	"$v0",
@@ -35,4 +35,11 @@ const std::string reg[32] = {
 	"$sp",
 	"$fp",
 	"$ra",
+};
+
+const std::string SysPara::coNm[4] = {
+	"$c0",
+	"$c1",
+	"$c2",
+	"$c3"
 };

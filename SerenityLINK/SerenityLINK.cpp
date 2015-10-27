@@ -67,7 +67,7 @@ void append(ofstream& fout, string fileName){
         }
         else{
             char tmp = 0;
-            while(foutOrigin*2 + fout.tellp() < origin*2){
+            while(foutOrigin*2 + fout.tellp() < (origin*2 + 4)){
                 fout.write(&tmp, 1);
             }
             fin.seekg(4);

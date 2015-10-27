@@ -43,7 +43,9 @@
 #define $SYSCALL 0
 
 class SysPara {
-	const static std::string reg[];
+public:
+	const static std::string rgNm[];
+	const static std::string coNm[];
 };
 
 #endif

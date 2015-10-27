@@ -29,6 +29,7 @@ void MipsCPU::boot(ifstream &fin)
 void MipsCPU::run(){
 	int mask;
 	char c = 'r';
+	char numstr[20];
 	while(c!='q'){
 		if (chkInt()) {
 			cpf[$EPC] = PC;
@@ -48,61 +49,62 @@ void MipsCPU::run(){
 		sft=(IR>>6)&31;
 		fun=IR & 63;
 		dat=(int)(short)(IR&0xFFFF);
-		adr=IR&0x3FFFFFF;
-
+		adr=IR&0x3FFFFFF;		
 		switch(op){
 		case 0:		//R-type
 			switch(fun){
 			case 32:	//ADD
-				rgf[rd]=rgf[rs]+rgf[rt];
-				operation = "ADD $rd,$rs,$rt";
+				rgf[rd]=rgf[rs]+rgf[rt];				
+				operation = "ADD "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];
 				break;
 			case 33:	//ADDU
 				rgf[rd]=rgf[rs]+rgf[rt];
-				operation = "ADDU $rd,$rs,$rt";				
+				operation = "ADDU "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];
 				break;
 			case 34:	//SUB
-				operation = "SUB $rd,$rs,$rt";
+				operation = "SUB "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];
 				rgf[rd]=rgf[rs]-rgf[rt];
 				break;
 			case 35:	//SUBU
-				operation = "SUBU $rd,$rs,$rt";
+				operation = "SUBU "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];
 				rgf[rd]=rgf[rs]-rgf[rt];
 				break;
 			case 36:	//AND
-				operation = "AND $rd,$rs,$rt";
+				operation = "AND "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];
 				rgf[rd]=rgf[rs]&rgf[rt];
 				break;
 			case 37:	//OR
-				operation = "OR $rd,$rs,$rt";
+				operation = "OR "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];
 				rgf[rd]=rgf[rs]|rgf[rt];
 				break;
 			case 38:	//XOR
-				operation = "XOR $rd,$rs,$rt";
+				operation = "XOR "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];
 				rgf[rd]=rgf[rs]^rgf[rt];
 				break;
 			case 39:	//NOR
-				operation = "NOR $rd,$rs,$rt";
+				operation = "NOR "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];
 				rgf[rd]=~(rgf[rs]|rgf[rt]);
 				break;
 			case 42:	//SLT
-				operation = "SLT $rd,$rs,$rt";
+				operation = "SLT "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];
 				rgf[rd]=0;
 				if (rgf[rs] < rgf[rt])
 					rgf[rd]=1;
 				break;
 			case 43:	//SLTU
-				operation = "SLTU $rd,$rs,$rt";
+				operation = "SLTU "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];
 				rgf[rd]=0;
 				if ((unsigned int)rgf[rs] < (unsigned int)rgf[rt])
 					rgf[rd]=1;
 				break;
 			case 0:		//SLL
-				operation = "SLL $rd,$rt,sft";
+				itoa(sft, numstr, 10);
+				operation = "SLL "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+numstr;				
 				rgf[rd]=rgf[rt]<<sft;
 				break;
-			case 2:		//SRL
-				operation = "SRL $rd,$rt,sft";
+			case 2:		//SRL				
+				itoa(sft, numstr, 10);
+				operation = "SRL "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+numstr;				
 				mask;
 				if (rt==0) break;
 				mask = 0x7fffffff;
@@ -111,15 +113,16 @@ void MipsCPU::run(){
 				rgf[rd]=rgf[rd]&&mask;
 				break;
 			case 3:		//SRA
-				operation = "SRA $rd,$rt,sft";
+				itoa(sft, numstr, 10);
+				operation = "SRA "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+numstr;				
 				rgf[rd]=rgf[rt]>>sft;
 				break;
-			case 4:		//SLLV
-				operation = "SLLV $rd,$rt,$rs";
+			case 4:		//SLLV				
+				operation = "SLLV "+SysPara::rgNm[rd]+","+SysPara::rgNm[rt]+","+SysPara::rgNm[rs];
 				rgf[rd]=rgf[rt]<<rgf[rs];
 				break;
 			case 6:		//SRLV
-				operation = "SRLV $rd,$rt,$rs";
+				operation = "SRLV "+SysPara::rgNm[rd]+","+SysPara::rgNm[rt]+","+SysPara::rgNm[rs];
 				mask;
 				if (rt==0) break;
 				mask = 0x7fffffff;
@@ -127,16 +130,16 @@ void MipsCPU::run(){
 				rgf[rd]=rgf[rt]>>rgf[rs];
 				rgf[rd]=rgf[rd]&&mask;
 				break;
-			case 7:
-				operation = "SRAV $rd,$rt,$rs";
+			case 7:		//SRAV				
+				operation = "SRAV "+SysPara::rgNm[rd]+","+SysPara::rgNm[rt]+","+SysPara::rgNm[rs];
 				rgf[rd]=rgf[rt]>>rgf[rs];
 				break;
-			case 8:		//JR
-				operation = "JR $rs";
+			case 8:		//JR				
+				operation = "JR "+SysPara::rgNm[rs];
 				PC=rgf[rs];
 				break;
-			case 9:		//JALR
-				operation = "JALR $rs,$rd";
+			case 9:		//JALR				
+				operation = "JALR "+SysPara::rgNm[rs]+","+SysPara::rgNm[rd];
 				rgf[rd] = PC+4;
 				PC = rgf[rs];
 				break;
@@ -153,12 +156,12 @@ void MipsCPU::run(){
 			break;
 		case 16:	//coprocessor relative
 			switch(rs){
-			case 0:
-				operation = "MFC0 $rt,$rd";
+			case 0:				
+				operation = "MFC0 "+SysPara::rgNm[rt]+","+SysPara::coNm[rd];
 				rgf[rt] = cpf[rd];
 				break;
 			case 4:
-				operation = "MTC0 $rt,$rd";
+				operation = "MTC0 "+SysPara::rgNm[rt]+","+SysPara::coNm[rd];				
 				cpf[rd] = rgf[rt];
 				break;
 			case 16:
@@ -170,72 +173,90 @@ void MipsCPU::run(){
 			break;
 		case 35:	//LW
 			rgf[rt]=MMU.lw(rgf[rs]+dat);
-			operation = "LW $rt,data($rs)";
+			itoa(dat, numstr, 10);
+			operation = "LW "+SysPara::rgNm[rt]+","+numstr+"("+SysPara::rgNm[rs]+")";			
 			break;
 		case 43:	//SW
 			MMU.sw(rgf[rs]+dat, rgf[rt]);
-			operation = "SW $rt,data($rs)";
+			itoa(dat, numstr, 10);
+			operation = "SW "+SysPara::rgNm[rt]+","+numstr+"("+SysPara::rgNm[rs]+")";		
 			break;
 		case 33: //lh
 			rgf[rt]=MMU.lh(rgf[rs]+dat);
-			operation = "LH $rt,data($rs)";
+			itoa(dat, numstr, 10);
+			operation = "LH "+SysPara::rgNm[rt]+","+numstr+"("+SysPara::rgNm[rs]+")";			
 			break;
 		case 41: //sh
 			MMU.sh(rgf[rs]+dat, rgf[rt]);
-			operation = "SH $rt,data($rs)";
+			itoa(dat, numstr, 10);
+			operation = "SW "+SysPara::rgNm[rt]+","+numstr+"("+SysPara::rgNm[rs]+")";			
 			break;
 		case 4:		//BEQ
 			if(rgf[rs]==rgf[rt])
 				PC+=(dat<<1);
-			operation = "BEQ $rs,$rt,data";
+			itoa(dat, numstr, 10);
+			operation = "BEQ "+SysPara::rgNm[rs]+","+SysPara::rgNm[rt]+","+numstr;			
 			break;
 		case 2:		//J
 			PC=(PC&0xF8000000)|(adr<<1);
-			operation = "J address";
+			itoa(adr, numstr, 10);
+			operation = "J ";
+			operation += numstr;
 			break;
 		case 3:		//JAL
 			rgf[$ra] = PC+4;
 			PC=(PC&0xF8000000)|(adr<<1);
-			operation = "JAL address";
+			itoa(adr, numstr, 10);
+			operation = "JAL ";
+			operation += numstr;			
 			break;
 		case 8:   	//addi
 			rgf[rt] = rgf[rs] + dat;
-			operation = "ADDI $rt,$rs,data";
+			itoa(dat, numstr, 10);
+			operation = "ADDI "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;					
             break;
 		case 9:		//addiu
 			rgf[rt] = rgf[rs] + dat;
-			operation = "ADDIU $rt,$rs,data";
+			itoa(dat, numstr, 10);
+			operation = "ADDIU "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;					
             break;
-		case 10:	//SLTI
-			operation = "SLTI $rd,$rs,imm";
+		case 10:	//SLTI			
+			itoa(dat, numstr, 10);
+			operation = "SLTI "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+numstr;		
 			rgf[rd]=0;
 			if (rgf[rs] < dat)
 				rgf[rd]=1;				
 			break;
-		case 11:	//SLTI
-			operation = "SLTIU $rd,$rs,imm";
+		case 11:	//SLTIU
+			itoa(dat, numstr, 10);
+			operation = "SLTIU "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+numstr;				
 			rgf[rd]=0;
 			if ((unsigned int)rgf[rs] < (unsigned int)dat)
 				rgf[rd]=1;				
 			break;
-		case 12:	//ANDI
-			operation = "ANDI $rd,$rs,imm";
-			rgf[rd]=rgf[rs]&dat;
+		case 12:	//ANDI			
+			itoa(dat, numstr, 10);
+			operation = "ANDI "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;
+			rgf[rt]=rgf[rs]&dat;
 			break;
-		case 13:	//ORI
-			operation = "ORI $rd,$rs,imm";
-			rgf[rd]=rgf[rs]|dat;
+		case 13:	//ORI			
+			itoa(dat, numstr, 10);
+			operation = "ORI "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;
+			rgf[rt]=rgf[rs]|dat;
 			break;
 		case 14:	//XORI
-			operation = "XORI $rd,$rs,imm";
-			rgf[rd]=rgf[rs]^dat;			
+			itoa(dat, numstr, 10);
+			operation = "XORI "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;			
+			rgf[rt]=rgf[rs]^dat;			
 			break;
 		case 15:	//LUI
-			operation = "LUI $rt,imm";
+			itoa(dat, numstr, 10);
+			operation = "LUI "+SysPara::rgNm[rt]+","+numstr;			
 			rgf[rt]=dat<<16;
 			break;
 		case 28:	//MUL
-			operation = "MUL $rd,$rs,$rt";
+			itoa(dat, numstr, 10);
+			operation = "MUL "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+SysPara::rgNm[rt];			
 			rgf[rd]=rgf[rs]*rgf[rt];
 			break;
 		default:
