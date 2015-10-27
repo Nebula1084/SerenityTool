@@ -22,7 +22,7 @@ void MipsCPU::boot(ifstream &fin)
 		unsigned short byte = 0;
 		byte = byte | (fin.get() << 8);
 		byte = byte | (fin.get() << 0);
-		MMU.sh(i,byte);
+		MMU.sh(i,byte);		
 	}
 }
 
