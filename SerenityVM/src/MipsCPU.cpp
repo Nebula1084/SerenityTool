@@ -28,14 +28,20 @@ void MipsCPU::boot(ifstream &fin)
 
 void MipsCPU::run(){
 	int mask;
+	int keycode;
 	char c = 'r';
 	char numstr[20];
-	while(c!='q'){
+	while(c!='q'){		
+		if (kbhit()){
+			keycode = getch();
+			MMU.sh(BKADR, keycode);
+			cpf[$CAUSE] = $KBINT;
+			cpf[$STATE] = cpf[$STATE] | 0x00000002;
+		}
 		if (chkInt()) {
 			cpf[$EPC] = PC;
 			cpf[$STATE] = cpf[$STATE] & 0xFFFFFFFE;
-			PC = INTENTRY;
-			cout << PC << endl;
+			PC = INTENTRY;			
 		}		
 		IR=MMU.lw(PC);		
 		PC+=2;						//16-bit/byte

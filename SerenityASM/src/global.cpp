@@ -9,3 +9,4 @@
 #include "global.hpp"
 
 unsigned int base = 0;
+map<string, MachineCode> equTable;

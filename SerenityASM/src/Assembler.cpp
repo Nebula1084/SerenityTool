@@ -40,7 +40,9 @@ void Assembler::generateBinaryFile(string &fileName)
         formation(instructions);  // 格式处理
         getLabelTable(instructions);  // 获得labeltable
         dealWithPseudo(instructions, instructionSet);  // 处理伪指令
-            
+        
+        //cout << labelTable["exit"] << endl;
+        
         fout.open(fileName.c_str(), ios_base::binary);
         MachineCode machineCode;  // 汇编后的机器码
         int curLineNumber = 0;  // 当前行号
@@ -54,7 +56,7 @@ void Assembler::generateBinaryFile(string &fileName)
                     firstLine->printErrorInfo(Illegal_origin_address);
                 if ((base & 1) == 1)
                     firstLine->printErrorInfo(Illegal_origin_address);
-   //             curLineNumber++;
+//                curLineNumber++;
                 itr++;
             }
             else base = 0;
@@ -86,7 +88,7 @@ void Assembler::generateBinaryFile(string &fileName)
 void Assembler::formation(Instructions &instructions)  // 格式处理
 {
     AssemblyCode assembleIns;  // 读入的汇编码
-    int line = 0;   // 当前行数，用于报错
+    int line = -1;   // 当前行数，用于报错
     bool mergeFlag;  // 是否需要合并（一行只有label的Ins要与下一行合并）
     Instruction *assembleLine;  // 一条指令对象
     set<Label> labelSet;  // Label集合，用于判断label是否重复

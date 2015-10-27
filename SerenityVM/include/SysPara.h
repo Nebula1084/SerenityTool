@@ -41,6 +41,7 @@
 
 //interupt number
 #define $SYSCALL 0
+#define $KBINT 1
 
 class SysPara {
 public:

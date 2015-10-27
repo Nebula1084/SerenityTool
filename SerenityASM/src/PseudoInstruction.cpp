@@ -352,6 +352,12 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
             newLine->setLine(getLine());
             newLine->split();
             instructionSet.push_back(newLine);
+            newLine = new RegInstruction;  // 增加空指令 add $s0,$s0,$zero
+            assemblyCode = "add $s0,$s0,$zero";
+            newLine->setAssemblyCode(assemblyCode);
+            newLine->setLine(getLine());
+            newLine->split();
+            instructionSet.push_back(newLine);
         }
         else {
             imme = immatoi(1, 32);
@@ -393,6 +399,12 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
                 assemblyCode = getLabel() + ": ";
             else assemblyCode = "";
             assemblyCode = assemblyCode + "addi " + getOperand(0) + ",$zero," + immitoa(imme);
+            newLine->setAssemblyCode(assemblyCode);
+            newLine->setLine(getLine());
+            newLine->split();
+            instructionSet.push_back(newLine);
+            newLine = new RegInstruction;  // 增加空指令 add $s0,$s0,$zero
+            assemblyCode = "add $s0,$s0,$zero";
             newLine->setAssemblyCode(assemblyCode);
             newLine->setLine(getLine());
             newLine->split();
