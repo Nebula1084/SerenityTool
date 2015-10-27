@@ -5,11 +5,11 @@
 		
 		addi	$a1, $a1, 0x3000	#the target address
 loop:	lh		$t0, 0($a0)		#get character
-		beq		$a0, $zero, exit
+		beq		$t0, $zero, exit
 		sh		$t0, 0($a1)		#print
 		addi	$a0, $a0, 1
 		addi	$a1, $a1, 1		#move to next
-		j		loop
+		beq		$zero, $zero, loop
 		
 exit:	pop		$a1
 		pop		$a0

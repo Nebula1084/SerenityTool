@@ -41,4 +41,4 @@ bin\test.bit: src\test.mips
 	
 .PHONY: clean
 clean:
-	rm bin\*.bit rm *.bit
+	rm bin/*.bit *.bit

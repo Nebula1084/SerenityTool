@@ -140,7 +140,7 @@ void MipsCPU::run(){
 				break;
 			case 9:		//JALR				
 				operation = "JALR "+SysPara::rgNm[rs]+","+SysPara::rgNm[rd];
-				rgf[rd] = PC+4;
+				rgf[rd] = PC;
 				PC = rgf[rs];
 				break;
 			case 12:	//SYSCALL
@@ -169,6 +169,10 @@ void MipsCPU::run(){
 				PC = cpf[$EPC];
 				cpf[$STATE] = cpf[$STATE] | 0x00000001;
 				break;
+			default:
+				operation = "ERROR!!!";
+				cout << "\nError!\n" << endl;
+				break;
 			}
 			break;
 		case 35:	//LW
@@ -189,7 +193,7 @@ void MipsCPU::run(){
 		case 41: //sh
 			MMU.sh(rgf[rs]+dat, rgf[rt]);
 			itoa(dat, numstr, 10);
-			operation = "SW "+SysPara::rgNm[rt]+","+numstr+"("+SysPara::rgNm[rs]+")";			
+			operation = "SH "+SysPara::rgNm[rt]+","+numstr+"("+SysPara::rgNm[rs]+")";			
 			break;
 		case 4:		//BEQ
 			if(rgf[rs]==rgf[rt])
@@ -204,7 +208,7 @@ void MipsCPU::run(){
 			operation += numstr;
 			break;
 		case 3:		//JAL
-			rgf[$ra] = PC+4;
+			rgf[$ra] = PC;
 			PC=(PC&0xF8000000)|(adr<<1);
 			itoa(adr, numstr, 10);
 			operation = "JAL ";
