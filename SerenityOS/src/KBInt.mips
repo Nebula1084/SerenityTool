@@ -1,0 +1,18 @@
+.ORIGIN 0x4700
+		push	$v0
+		push	$a0
+		push	$a1
+		push	$a2
+		
+		addi	$v0, $zero, 2
+		lh		$a0, 0x5000($zero)		
+		addi	$a1, $zero, 7
+		addi	$a2, $zero, 10
+		syscall
+		
+		pop		$a2
+		pop		$a1
+		pop		$a0
+		pop		$v0
+		
+		jr		$ra

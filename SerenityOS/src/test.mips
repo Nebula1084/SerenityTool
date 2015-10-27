@@ -10,7 +10,7 @@
 		addi	$a0, $zero, 0x43
 		addi	$a1, $zero, 7
 		addi	$a2, $zero, 10
-		syscall				
+		syscall
 		
 		add		$v0, $zero, $zero
 	 	addi	$a0, $zero, 0x41

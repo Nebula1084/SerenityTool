@@ -1,7 +1,7 @@
 SASM	= ..\SerenityTest\SerenityASM.exe
 SLINK	= ..\SerenityTest\SerenityLINK.exe
 
-SerenityOS.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit bin\test.bit bin\putchar.bit
+SerenityOS.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit bin\test.bit bin\putchar.bit bin\KBInt.bit
 	$(SLINK) -o SerenityOS.bit \
 		bin\IntEntry.bit \
 		bin\SysEntry.bit \
@@ -10,7 +10,8 @@ SerenityOS.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\pr
 		bin\print.bit \
 		bin\printstr.bit \
 		bin\test.bit \
-		bin\putchar.bit
+		bin\putchar.bit \
+		bin\KBInt.bit
 
 bin\IntEntry.bit: src\IntEntry.mips
 	$(SASM) src\IntEntry.mips
@@ -43,6 +44,10 @@ bin\putchar.bit: src\putchar.mips
 bin\test.bit: src\test.mips
 	$(SASM) src\test.mips
 	mv src\test.bit bin\test.bit
+	
+bin\KBInt.bit: src\KBInt.mips
+	$(SASM) src\KBInt.mips
+	mv src\KBInt.bit bin\KBInt.bit
 	
 .PHONY: clean
 clean:

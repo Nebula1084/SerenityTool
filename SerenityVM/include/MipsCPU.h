@@ -4,7 +4,7 @@
 #include <MemoryManageUnit.h>
 #include <fstream>
 
-#define MMU_SIZE 0x5000
+#define MMU_SIZE 0x5100
 #define INITSP 0x2FFE
 #define VMADR 0x3000
 #define SYSADR 0x4000
@@ -12,6 +12,7 @@
 #define INTADR 0x4600
 #define IVTADR 0x4B00
 #define INTENTRY 0x4F00
+#define BKADR 0x5000
 
 using namespace std;
 class MipsCPU
