@@ -34,6 +34,10 @@ void MipsCPU::run(){
 	while(c!='q'){		
 		if (kbhit()){
 			keycode = getch();
+			if (keycode==224){
+				keycode = getch();
+				keycode+=100;
+			}
 			MMU.sh(BKADR, keycode);
 			cpf[$CAUSE] = $KBINT;
 			cpf[$STATE] = cpf[$STATE] | 0x00000002;
