@@ -48,4 +48,4 @@ Currently, we support a little bit pseudo instruction, which are `move`, `push`,
 
 
 # SerenityTest
-After build, `SerenityASM.exe` and `SerenityVM.exe` would be under the directory `SerenityTool/SerrentiyTest`. And user could them it to develop `MIPS` project.
+After build, `SerenityASM.exe` and `SerenityVM.exe` would be under the directory `SerenityTool/SerrentiyTest`. And user could them it to develop `MIPS` project.1
