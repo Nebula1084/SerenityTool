@@ -8,3 +8,6 @@
 		pop		$a1
 		pop		$a0
 		jr		$ra
+
+# syscall $v0 = 0
+# a0 ASCII of the char to be output	

@@ -1,4 +1,5 @@
 .ORIGIN 0x4500
-		.2byte 0x4000
-		.2byte 0x4100
-		.2byte 0x4200
+		.2byte 0x4000   # print
+		.2byte 0x4100   # printstr
+    	.2byte 0x4200   # putchar
+		.2byte 0x4300 	# getchar

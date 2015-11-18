@@ -1,0 +1,45 @@
+.ORIGIN         0x0
+                addi    $sp, $zero, 0x2EFE
+
+                la      $a0, str
+                addi    $v0, $zero, 1
+                addi    $a1, $zero, 10
+                syscall
+                 
+                sw      $zero, 0x4FFE($zero)     
+                addi    $a1, $zero, 1
+                add     $a2, $zero, $zero
+                addi    $t0, $zero, 40
+         
+LOOP:           addi    $v0, $zero, 3
+                syscall
+                move    $a0, $a3
+                addi    $t1, $zero, 0x0D        # linefeed
+                beq     $a0, $t1, LINEFEED
+                addi    $t1, $zero, 0x08        # backspace
+                beq     $a0, $t1, BACKSPACE
+                addi    $v0, $zero, 2
+                syscall
+                addi    $a2, $a2, 1
+                ble     $a2, $t0, LOOP
+                sub     $a2, $a2, $t0
+                addi    $a1, $a1, 1
+ENDLOOP:        beq     $zero, $zero, LOOP
+
+LINEFEED:       addi    $a1, $a1, 1
+                add     $a2, $zero, $zero
+                beq     $zero, $zero, LOOP
+
+BACKSPACE:      addi    $a2, $a2, -1
+                bge     $a2, $zero, PRINTBLANK
+                add     $a2, $a2, $t0
+                addi    $a1, $a1, -1
+                bne     $a1, $zero, PRINTBLANK
+                addi    $a1, $zero, 1
+PRINTBLANK:     move    $a0, $zero
+                addi    $v0, $zero, 2
+                syscall
+                beq     $zero, $zero, LOOP
+                                         
+       
+str:    .asciiz "editor v1.1"       

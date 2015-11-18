@@ -15,3 +15,7 @@ exit:	pop		$t0
 		pop		$a1
 		pop		$a0
 		jr		$ra
+		
+# syscall $v0 = 1
+# $a0 address of the string
+# $a1 offset from the Video memory
