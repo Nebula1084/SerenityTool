@@ -33,7 +33,7 @@ MachineCode JumpInstruction::assemble(AssembleInfo &assembleInfo, map<Label, Add
             if (imme == errorIns)
                 printErrorInfo(Wrong_immediate_number_or_offset);
         }
-        else imme = labelTable[addr];
+        else imme = labelTable[addr] + base;
         ins |= (imme & 0x03ffffff);
     }
     else if (opName == "beq" || opName == "bne") { // beq rs,rt,imme
