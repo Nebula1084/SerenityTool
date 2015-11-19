@@ -3,18 +3,18 @@
 		push    $t0
 		push    $t1
 		push    $t2
-		push    $s0
 		push    $a0
 		mfc0    $t0, $c0
 		push    $t0             #push EPC
 		
 		mfc0    $t1, $c1        #$t1 = Cause
 		
-		mfc0    $t0, $c2        #$t0 = State
+        mfc0    $t0, $c2        #$t0 = State
 		lui     $t2, 0xFFFF
 		ori     $t2, $t2, 0xFFFD
 		and     $t0, $t0, $t2
 		ori     $t0, $t0, 1
+        lh      $t2, 0x5000($zero)  #$t2 = Scancode
 		mtc0    $t0, $c2        #State = State[31:2],2'b01 #enable interrupt
 		
 		add     $t1 , $t1, $t1
@@ -31,7 +31,6 @@ END:
         pop  	$t0    #pop EPC
         mtc0 	$t0, $c0
         pop  	$a0
-        pop  	$s0
         pop  	$t2
         pop  	$t1
         pop  	$t0
