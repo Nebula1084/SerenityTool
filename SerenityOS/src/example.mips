@@ -1,0 +1,342 @@
+/******************************************<br>
+ * MIPS系统程序。2013.12.26.Q.<br>
+ * 弹指一挥双甲子，改天换地全仗君<br>
+ ******************************************/<br>
+INTadr		equ	1024	#系统程序起始地址<br>
+KEYBOARD	equ	1000	#键盘I/O地址<br>
+IntEnable	equ	0x80000000<br>
+STATUs		equ	12	#状态标志寄存器<br>
+CAUSE		equ	13	#中断原因寄存器<br>
+EPC		equ	14	#中断返回寄存器<br>
+.origin	0<br>
+	j	InitOS<br>
+/******************************************<br>
+ * IntVtTable：系统中断向量表<br>
+ *<br>
+ ******************************************/<br>
+IntVtTable	.4byte	INT00s,	INT01s	//int 00, 01<br>
+		.4byte	INT02s,	INT03s	//int 02, 03<br>
+		.4byte	INT04s,	INT05s	//int 04, 05<br>
+		.4byte	INT06s,	INT07s	//int 06, 07<br>
+		.4byte	syscal,	intkb	//int 08, 09<br>
+		.4byte	INT0As,	INT0Bs	//int 0a, 0b<br>
+		.4byte	INT0Cs,	INT0Ds	//int 0c, 0d<br>
+		.4byte	INT0Es,	INT0Fs	//int 0e, 0f<br>
+		.4byte	INT10s,	INT11s	//int 10, 11<br>
+		.4byte	INT12s,	INT13s	//int 12, 13<br>
+		.4byte	INT14s,	INT15s	//int 14, 15<br>
+		.4byte	INT16s,	INT17s	//int 16, 17<br>
+		.4byte	INT18s,	INT19s	//int 18, 19<br>
+		.4byte	INT1As,	INT1Bs	//int 1a, 1b<br>
+		.4byte	INT1Cs,	INT1Ds	//int 1c, 1d<br>
+		.4byte	INT1Es,	INT1Fs	//int 1e, 1f<br>
+#.origin	1024<br>
+.data<br>
+/*屏幕数据段：必须连续*/<br>
+CRTadr		.4byte	6144	#当前屏幕方式，0=文本<br>
+CRTstart	.2byte<br>
+WIDTH		.2byte	80	#屏幕字符列数<br>
+HEIGHT		.2byte	25	#屏幕字符行数<br>
+CurCOL		.2byte	20	#当前光标列x<br>
+CurROW		.2byte	10	#当前光标行y<br>
+SCRmod		.2byte	0	#当前屏幕方式，0=文本<br>
+hi		.byte	"Hello'2013", 13, "Mips CPU", 13, "ZheJiang University",0<br>
+<br>
+INTnum		.2byte	16,0		#系统允许中断数、当前<br>
+kyptr		.2byte	kybuf, kybuf	#键盘缓冲区首指针、尾指针<br>
+kybuf		.2byte	1,2,3,4,5,6,7,8	#16个字符32B键盘缓冲区<br>
+.text<br>
+/******************************************<br>
+ * INTvect：中断总入口<br>
+ *<br>
+ ******************************************/<br>
+.origin		INTadr<br>
+INTvect:		#中断总入口<br>
+	push	$ra,$s0,$t0<br>
+	mfc0	$s0,Cause		#取中断号<br>
+	la	$t0,INTnum<br>
+	lh	$t0,0($t0)		#取中断数<br>
+	sltu	$t0,$s0,$t0		#比较<br>
+	beq	$t0,$zero,EXIT		#非法中断<br>
+	sll	$s0,$s0,2<br>
+	lw	$s0,IntVtTable($s0)	#转相应<br>
+	jalr	$s0,$ra<br>
+EXIT:	pop	$ra,$s0,$t0<br>
+	eret<br>
+<br>
+/******************************************<br>
+ * intkb：键盘中断<br>
+ *<br>
+ ******************************************/<br>
+intkb:			#键盘中断<br>
+	push	$t0,$s0,$s1<br>
+	la	$t0,kyptr	#缓冲区首址<br>
+	lh	$s0,0($t0)	#首指针<br>
+	lh	$s1,2($t0)	#尾指针<br>
+	la	$t0,kybuf	#缓冲区首址<br>
+	addi	$t0,$t0,32	#缓冲区末址<br>
+	addi	$s0,$s0,2<br>
+	blt	$s0,$t0,Ra1	#超缓冲区末？<br>
+	addi	$s0,$s0,-32	#等于折返<br>
+Ra1:	beq	$s0,$s1,Ra9	#缓冲区满<br>
+	lb	$t0,KEYBOARD($zero)<br>
+	sh	$t0,0($s0)	#键盘写入首址<br>
+	la	$t0,kyptr	#缓冲区首址<br>
+	sh	$s0,0($t0)	#存缓冲区首址<br>
+Ra9:	pop	$t0,$s0,$s1<br>
+	jr	$ra<br>
+<br>
+/******************************************<br>
+ * READchar：syscall系统调用<br>
+ *<br>
+ ******************************************/<br>
+READchar:			#syscall<br>
+	push	$t0,$s0,$s1<br>
+	mfc0	$t0,EPC<br>
+	push	$t0<br>
+	mfc0	$t0,STATUs<br>
+	sll	$t0,$t0,1<br>
+	srl	$t0,$t0,1	#0:允许中断<br>
+	mtc0	$t0,STATUs<br>
+<br>
+	la	$t0,kyptr	#键盘指针<br>
+	lh	$s1,2($t0)	#尾指针<br>
+Rb1:	lh	$s0,0($t0)	#首指针<br>
+	beq	$s0,$s1,Rb1	#等键盘中断输入<br>
+	la	$t0,kybuf	#缓冲区首址<br>
+	addi	$t0,$t0,32	#缓冲区末址<br>
+	addi	$s1,$s1,2<br>
+	blt	$s1,$t0,Rb2	#超缓冲区末？<br>
+	addi	$s1,$s1,-32	#等于折返<br>
+Rb2:	lh	$a0,0($s1)	#返回: $a0<br>
+	la	$t0,kyptr	#键盘指针<br>
+	sh	$s1,2($t0)	#写尾指针<br>
+<br>
+	mfc0	$s0,STATUs<br>
+	lui	$t0,0x8000<br>
+	or	$s0,$s0,$t0	#1:禁止中断<br>
+	mtc0	$s0,STATUs<br>
+	pop	$t0<br>
+	mtc0	$t0,EPC<br>
+	pop	$t0,$s0,$s1<br>
+	jr	$ra<br>
+<br>
+/******************************************<br>
+ * READstring：syscall系统调用<br>
+ *<br>
+ ******************************************/<br>
+READstring:			#syscall<br>
+	push	$ra,$a0,$t0,$s0,$s1<br>
+	move	$s0,$a0		#缓冲区首地址<br>
+	add	$s1,$s0,$a1	#缓冲区末地址<br>
+	addi	$t0,$zero,13	#回车<br>
+Rm1:	jal	READchar<br>
+	sb	$a0,0($s0)<br>
+	addi	$s0,$s0,1<br>
+	beq	$a0,$t0,Rm9	#回车结束<br>
+	bne	$s0,$s1,Rm1	#不满继续<br>
+Rm9:	pop	$ra,$a0,$t0,$s0,$s1<br>
+	jr	$ra<br>
+<br>
+/******************************************<br>
+ * syscall：int 8<br>
+ *<br>
+ ******************************************/<br>
+syscal:			#系统功能调用<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,PRINTint	//1<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,PRINTfloat	//2<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,PRINTdouble	//3<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,PRINTstring	//4<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,READint	//5<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,READfloat	//6<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,READdouble	//7<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,READstring	//8<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,sysBreak	//9<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,sysExit	//10<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,PRINTchar	//11<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,READchar	//12<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,FILEopen	//13<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,FILEread	//14<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,FILEwrite	//15<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,FILEclose	//16<br>
+	addi	$v0,$v0,-1<br>
+	beqz	$v0,sysExit2	//17<br>
+	jr	$ra<br>
+/******************************************<br>
+ * dispCHxy(ch, x, y)：在(x,y)显示字符<br>
+ *<br>
+ ******************************************/<br>
+dispCHxy:		#在(x,y)显示字符<br>
+	push	$a1,$s0,$t0,$t1<br>
+	la	$t0,WIDTH	#WIDTH adr<br>
+	lh	$s0,0($t0)	#WIDTH<br>
+<br>
+	move	$t1,$zero<br>
+Rc0:	andi	$t0,$a1,1	#移位加$s4(ROW)*$s1(WIDTH)<br>
+	beqz	$t0,Rc1<br>
+	add	$t1,$t1,$s0<br>
+Rc1:	sll	$s0,$s0,1<br>
+	srl	$a1,$a1,1<br>
+	bnez	$a1,Rc0<br>
+	add	$t1,$t1,$a2	#+COL<br>
+	la	$t0,CRTadr<br>
+	lw	$t0,0($t0)<br>
+	add	$t1,$t1,$t0<br>
+	sb	$a0,0($t1)	#写<br>
+<br>
+	pop	$a1,$s0,$t0,$t1<br>
+	jr	$ra<br>
+<br>
+/******************************************<br>
+ * dispCH(ch)：在当前光标位置显示字符<br>
+ *<br>
+ ******************************************/<br>
+PRINTchar:			#显示字符<br>
+	push	$ra,$a0,$a1,$a2,$t0<br>
+	la	$t0,CurROW	#CurROW adr<br>
+	lh	$a1,0($t0)	#CurROW<br>
+	la	$t0,CurCOL	#CurCOL adr<br>
+	lh	$a2,0($t0)	#CurCOL<br>
+<br>
+	li	$t0,13		#回车<br>
+	beq	$a0,$t0,Rd4<br>
+	jal	dispCHxy<br>
+<br>
+	la	$t0,WIDTH	#WIDTH adr<br>
+	lh	$t0,0($t0)	#WIDTH<br>
+	addi	$a2,$a2,1	#列+1<br>
+	blt	$a2,$t0,Rd2	#如果&lt;WIDTH<br>
+Rd4:	move	$a2,$zero<br>
+<br>
+	la	$t0,HEIGHT	#HEIGHT adr<br>
+	lh	$t0,0($t0)	#HEIGHT<br>
+	addi	$a1,$a1,1	#行+1<br>
+	blt	$a1,$t0,Rd3	#如果&lt;HEIGHT<br>
+	addi	$a1,$a1,-1<br>
+<br>
+	jal	scrollUp	#向上滚屏一行<br>
+<br>
+Rd3:	la	$t0,CurROW	#CurROW adr<br>
+	sh	$a1,0($t0)<br>
+Rd2:	la	$t0,CurCOL	#CurCOL adr<br>
+	sh	$a2,0($t0)<br>
+	pop	$ra,$a0,$a1,$a2,$t0<br>
+	jr	$ra<br>
+<br>
+/******************************************<br>
+ * scrollUp：整屏上滚一行<br>
+ *<br>
+ ******************************************/<br>
+scrollUp:			#整屏上滚一行<br>
+	push	$t0,$t1,$s0,$s1<br>
+	la	$t0,WIDTH	#WIDTH adr<br>
+	lh	$s0,0($t0)	#WIDTH<br>
+	la	$t0,HEIGHT	#HEIGHT adr<br>
+	lh	$s1,0($t0)	#HEIGHT<br>
+	addi	$s1,$s1,-1	#HEIGHT--<br>
+<br>
+	move	$t1,$zero<br>
+Ru1:	andi	$t0,$s0,1	#移位加$s1(WIDTH)*$s2(HEIGHT)<br>
+	beqz	$t0,Ru2<br>
+	add	$t1,$t1,$s1<br>
+Ru2:	sll	$s1,$s1,1	#HTIGHT&lt;&lt;1<br>
+	srl	$s0,$s0,1	#WIDTH>>1<br>
+	bne	$s0,$zero,Ru1<br>
+<br>
+	la	$t0,CRTadr	#显存首址 adr<br>
+	lw	$s0,0($t0)	#显存首址<br>
+	add	$t1,$t1,$s0	#(N-1)行:CRTadr+WT*(HT-1)<br>
+	la	$t0,WIDTH	#WIDTH adr<br>
+	lh	$s1,0($t0)	#WIDTH<br>
+	add	$s1,$s0,$s1	#CRTadr+WIDTH<br>
+<br>
+Ru3:	lw	$t0,0($s1)	#读字<br>
+	sw	$t0,0($s0)	#写字<br>
+	addi	$s0,$s0,4<br>
+	addi	$s1,$s1,4<br>
+	bne	$s0,$t1,Ru3<br>
+<br>
+	li	$t0,'.'		#填充字符<br>
+Ru4:	sb	$t0,0($s0)	#填充空白行<br>
+	addi	$s0,$s0,1<br>
+	bne	$s0,$s1,Ru4<br>
+	pop	$t0,$t1,$s0,$s1<br>
+	jr	$ra<br>
+<br>
+/******************************************<br>
+ * clr：清屏<br>
+ *<br>
+ ******************************************/<br>
+clr:			#清屏<br>
+	push	$t0,$t1,$s0,$s1<br>
+	la	$t0,WIDTH	#WIDTH adr<br>
+	lh	$s0,0($t0)	#WIDTH<br>
+	la	$t0,HEIGHT	#HEIGHT adr<br>
+	lh	$s1,0($t0)	#HEIGHT<br>
+<br>
+	move	$t1,$zero<br>
+Re0:	andi	$t0,$s0,1	#移位加$s1(WIDTH)*$s2(HEIGHT)<br>
+	beqz	$t0,Re1<br>
+	add	$t1,$t1,$s1<br>
+Re1:	sll	$s1,$s1,1	#HTIGHT&lt;&lt;1<br>
+	srl	$s0,$s0,1	#WIDTH>>1<br>
+	bne	$s0,$zero,Re0<br>
+<br>
+	la	$t0,CRTadr<br>
+	lw	$s0,0($t0)<br>
+	add	$s1,$s0,$t1	#CRTadr+(WT*HT)<br>
+	li	$t0,'^'		#填充字符<br>
+Re2:	sb	$t0,0($s0)	#填充空白行<br>
+	addi	$s0,$s0,1<br>
+	bne	$s0,$s1,Re2<br>
+	pop	$t0,$t1,$s0,$s1<br>
+	jr	$ra<br>
+<br>
+/******************************************<br>
+ * PRINTstring：字符串显示<br>
+ *<br>
+ ******************************************/<br>
+PRINTstring:		#显示字符串<br>
+	push	$ra,$a0,$s0<br>
+	move	$s0,$a0<br>
+Rn1:	lb	$a0,0($s0)<br>
+	beqz	$a0,Rn9<br>
+	jal	PRINTchar<br>
+	addi	$s0,$s0,1<br>
+	j	Rn1<br>
+Rn9:	pop	$ra,$a0,$s0<br>
+	jr	$ra<br>
+<br>
+/******************************************<br>
+ * intkb：键盘中断<br>
+ *<br>
+ ******************************************/<br>
+InitOS:			#系统初始化<br>
+	jal	clr		#清屏<br>
+HelloWorld:			#显示字符串<br>
+	la	$a0,hi<br>
+	li	$v0,4<br>
+	syscall<br>
+RRRR:	li	$v0,12<br>
+	syscall<br>
+	li	$v0,11<br>
+	syscall<br>
+	j	RRRR<br>
+	li	$v0,12<br>
+	syscall<br>

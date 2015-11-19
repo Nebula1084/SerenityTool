@@ -16,9 +16,20 @@ currently, our VM only could execute following instructions:<br>
 `LH $rt,data($rs)`<br>
 `SH $rt,data($rs)`<br>
 `BEQ $rs,$rt,data`<br>
+`BNE $rs,$rt,data`<br>
 `J address`<br>
 `JAL address`<br>
 `ADDI $rt,$rs,data`<br>
+
+~~~
+up 172
+down 180
+left 175
+right 177
+~~~ 
+
+##Error Hint
+When virtual machine execute a instruction which is illegal, the virtual machine would pause and prompt the code that would be executed.
 
 ##Usage##
 The Virtual machine could be used in following way.<br>
@@ -41,4 +52,4 @@ Currently, we support a little bit pseudo instruction, which are `move`, `push`,
 
 
 # SerenityTest
-After build, `SerenityASM.exe` and `SerenityVM.exe` would be under the directory `SerenityTool/SerrentiyTest`. And user could them it to develop `MIPS` project. 
+After build, `SerenityASM.exe` and `SerenityVM.exe` would be under the directory `SerenityTool/SerrentiyTest`. And user could them it to develop `MIPS` project.1

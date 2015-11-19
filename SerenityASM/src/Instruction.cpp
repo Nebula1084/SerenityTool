@@ -227,7 +227,10 @@ bool Instruction::split()
         string str = "";
         
         for (; i < assemblyCode.size(); i++) {
-            char ch = toLowerCase(assemblyCode.at(i));
+            //char ch = toLowerCase(assemblyCode.at(i));
+            char ch = assemblyCode.at(i);
+            if (!quote)
+                ch = toLowerCase(ch);
             if (quote) {  //  引号内内容
                 if (blankSlant) {  // 前一字符为转义符
                     switch (ch) {
@@ -307,7 +310,10 @@ bool Instruction::split()
         string str = "";
         
         for (; i < assemblyCode.size(); i++) {
-            char ch = toLowerCase(assemblyCode.at(i));
+            //char ch = toLowerCase(assemblyCode.at(i));
+            char ch = assemblyCode.at(i);
+            if (!quote)
+                ch = toLowerCase(ch);
             if (quote) {  //  引号内内容
                 if (blankSlant) {  // 前一字符为转义符
                     switch (ch) {

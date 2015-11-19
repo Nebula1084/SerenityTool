@@ -34,6 +34,10 @@ void MipsCPU::run(){
 	while(c!='q'){		
 		if (kbhit()){
 			keycode = getch();
+			if (keycode==224){
+				keycode = getch();
+				keycode+=100;
+			}
 			MMU.sh(BKADR, keycode);
 			cpf[$CAUSE] = $KBINT;
 			cpf[$STATE] = cpf[$STATE] | 0x00000002;
@@ -157,6 +161,9 @@ void MipsCPU::run(){
 			default:
 				operation = "ERROR!!!";
 				cout << "\nError!\n" << endl;
+				cout << "fun is " << fun << endl;
+				cout << operation << " opcode:" << hex << op << " rd:" << rd << " rs:" << rs << " rt:" << rt << " sft:" << sft << " data:" << dat << " address:"<< adr << endl;
+				getch();
 				break;
 			}
 			break;
@@ -178,6 +185,10 @@ void MipsCPU::run(){
 			default:
 				operation = "ERROR!!!";
 				cout << "\nError!\n" << endl;
+				cout << "op is " << op << endl;
+				cout << "rs is " << rs << endl;
+				cout << operation << " opcode:" << hex << op << " rd:" << rd << " rs:" << rs << " rt:" << rt << " sft:" << sft << " data:" << dat << " address:"<< adr << endl;
+				getch();
 				break;
 			}
 			break;
@@ -206,6 +217,12 @@ void MipsCPU::run(){
 				PC+=(dat<<1);
 			itoa(dat, numstr, 10);
 			operation = "BEQ "+SysPara::rgNm[rs]+","+SysPara::rgNm[rt]+","+numstr;			
+			break;
+		case 5:	//BNE
+			if(rgf[rs]!=rgf[rt])
+				PC+=(dat<<1);
+			itoa(dat, numstr, 10);
+			operation = "BNE "+SysPara::rgNm[rs]+","+SysPara::rgNm[rt]+","+numstr;						
 			break;
 		case 2:		//J
 			PC=(PC&0xF8000000)|(adr<<1);
@@ -272,6 +289,7 @@ void MipsCPU::run(){
 		default:
 			cout << "\nError!" << endl; 
 			operation = "ERROR!!!";
+			cout << "op is " << op << endl;
 			break;
 		}
 		MMU.print();
