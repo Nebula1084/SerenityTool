@@ -1,7 +1,13 @@
+MV = copy
+RM = del
+
 Final: SASM SVM SLINK
-	mv "SerenityASM\SerenityASM.exe" "SerenityTest\SerenityASM.exe"
-	mv "SerenityVM\SerenityVM.exe" "SerenityTest\SerenityVM.exe"
-	mv "SerenityLINK\SerenityLINK.exe" "SerenityTest\SerenityLINK.exe"
+	$(MV) "SerenityASM\SerenityASM.exe" "SerenityOS\SerenityASM.exe"
+	$(MV) "SerenityVM\SerenityVM.exe" "SerenityOS\SerenityVM.exe"
+	$(MV) "SerenityLINK\SerenityLINK.exe" "SerenityOS\SerenityLINK.exe"
+	$(MV) "SerenityASM\SerenityASM.exe" "SerenityTest\SerenityASM.exe"
+	$(MV) "SerenityVM\SerenityVM.exe" "SerenityTest\SerenityVM.exe"
+	$(MV) "SerenityLINK\SerenityLINK.exe" "SerenityTest\SerenityLINK.exe"
 SASM:
 	mingw32-make -C SerenityASM
 SVM:
