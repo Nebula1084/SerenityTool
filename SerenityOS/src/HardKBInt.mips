@@ -73,7 +73,7 @@ NOT_Extended:
 NOT_Shift:
         la      $t0, Shift_Table    # $t0 = Shift_Table
 END_IF:
-        addi    $t0, $t0, $s4       # $t0 = $t0 + Scancode
+        add     $t0, $t0, $s4       # $t0 = $t0 + Scancode
         lw      $s5, 0($t0)         # $s5 = mem[$t0];
         beq     $zero, $zero, Write_Buffer
 
@@ -98,7 +98,7 @@ Write_Buffer:
         li      $t0, 0x100
         beq     $t0, $s5, END       # if(Virtual Key Code == 0x100) goto END
 
-        addi    $t0, $s0, $s1       # $t0 = BUFFER BASE + IN
+        add     $t0, $s0, $s1       # $t0 = BUFFER BASE + IN
         sw      $s5, 0($t0)         # mem[$t0] = Virtual Key Code
 
         add     $v0, $zero, $s5
