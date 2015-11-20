@@ -16,6 +16,7 @@ currently, our VM only could execute following instructions:<br>
 `LH $rt,data($rs)`<br>
 `SH $rt,data($rs)`<br>
 `BEQ $rs,$rt,data`<br>
+`BNE $rs,$rt,data`<br>
 `J address`<br>
 `JAL address`<br>
 `ADDI $rt,$rs,data`<br>
@@ -26,6 +27,9 @@ down 180
 left 175
 right 177
 ~~~ 
+
+##Error Hint
+When virtual machine execute a instruction which is illegal, the virtual machine would pause and prompt the code that would be executed.
 
 ##Usage##
 The Virtual machine could be used in following way.<br>
