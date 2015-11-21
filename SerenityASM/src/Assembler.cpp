@@ -38,6 +38,7 @@ void Assembler::generateBinaryFile(string &fileName)
         Instructions instructions;
         InstructionSet instructionSet;
         formation(instructions);  // 格式处理
+        fout.open(fileName.c_str(), ios_base::binary);
         getLabelTable(instructions);  // 获得labeltable
         {
         vector<Instruction>::iterator itr = instructions.begin();
@@ -62,7 +63,6 @@ void Assembler::generateBinaryFile(string &fileName)
         
         //cout << labelTable["exit"] << endl;
         
-        fout.open(fileName.c_str(), ios_base::binary);
         MachineCode machineCode;  // 汇编后的机器码
         int curLineNumber = 0;  // 当前行号
         
