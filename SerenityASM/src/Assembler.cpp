@@ -38,12 +38,31 @@ void Assembler::generateBinaryFile(string &fileName)
         Instructions instructions;
         InstructionSet instructionSet;
         formation(instructions);  // 格式处理
+        fout.open(fileName.c_str(), ios_base::binary);
         getLabelTable(instructions);  // 获得labeltable
+        {
+        vector<Instruction>::iterator itr = instructions.begin();
+        if (itr != instructions.end()) {      // 处理第一行的.origin
+            Instruction firstLine = *itr;
+            if (firstLine.getOpName() == ".origin") {  // 第一行是.origin
+                base = firstLine.immatoi(0, 32, false);
+                if (base == errorIns)
+                    firstLine.printErrorInfo(Illegal_origin_address);
+                if ((base & 1) == 1)
+                    firstLine.printErrorInfo(Illegal_origin_address);
+                //                curLineNumber++;
+                //itr++;
+            }
+            else base = 0;
+            cout << "0x" << uppercase << hex << setfill('0') << setw(8) << base << endl;
+            for (int i = 3; i >= 0; --i)
+                fout.write(((char *)&base) + i, 1);
+        }
+        }
         dealWithPseudo(instructions, instructionSet);  // 处理伪指令
         
         //cout << labelTable["exit"] << endl;
         
-        fout.open(fileName.c_str(), ios_base::binary);
         MachineCode machineCode;  // 汇编后的机器码
         int curLineNumber = 0;  // 当前行号
         
@@ -51,18 +70,18 @@ void Assembler::generateBinaryFile(string &fileName)
         if (itr != instructionSet.end()) {      // 处理第一行的.origin
             Instruction *firstLine = *itr;
             if (firstLine->getOpName() == ".origin") {  // 第一行是.origin
-                base = firstLine->immatoi(0, 32, false);
-                if (base == errorIns)
-                    firstLine->printErrorInfo(Illegal_origin_address);
-                if ((base & 1) == 1)
-                    firstLine->printErrorInfo(Illegal_origin_address);
+//                base = firstLine->immatoi(0, 32, false);
+//                if (base == errorIns)
+//                    firstLine->printErrorInfo(Illegal_origin_address);
+//                if ((base & 1) == 1)
+//                    firstLine->printErrorInfo(Illegal_origin_address);
 //                curLineNumber++;
                 itr++;
             }
-            else base = 0;
-            cout << "0x" << uppercase << hex << setfill('0') << setw(8) << base << endl;
-            for (int i = 3; i >= 0; --i)
-                fout.write(((char *)&base) + i, 1);
+//            else base = 0;
+//            cout << "0x" << uppercase << hex << setfill('0') << setw(8) << base << endl;
+//            for (int i = 3; i >= 0; --i)
+//                fout.write(((char *)&base) + i, 1);
         }
 
         for (; itr != instructionSet.end(); itr++, curLineNumber++) {

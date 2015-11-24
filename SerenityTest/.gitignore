@@ -1,5 +1,2 @@
-*.exe
 *.bit
 *.txt
-!boot.bit
-!boot.txt
