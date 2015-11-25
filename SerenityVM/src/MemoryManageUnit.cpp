@@ -30,7 +30,7 @@ void MemoryManageUnit::sh(int adr, int dat)
 bool MemoryManageUnit::adrChk(int adr){
     if (0 <= adr && adr < size)
         return true;
-    cout << "we couldn't access memory at " << adr << "." << endl;
+    cout << "we couldn't access memory at " << hex << adr << "." << endl;
         exit(-1);
 }
 

@@ -38,7 +38,25 @@ The Virtual machine could be used in following way.<br>
 For instance, insrtuction `SerenityVM.exe boot.bit` would execute the binary file `boot.bit`. And the using option `-d` could specify the debug mode, like `SerenityVM.exe -d boot.bit`.
 ##Display##
 the Serenity VM support simple text mode, which support all `Zhe standard code`. The memory whose address is after `0x3000` is video memory, where we could write code and the screen would display correspondent character. By the way, the program could not exit but could be halted by `ctrl+c`.
+##Virtual Disk
+Now, Serenity VM support virtual disk functionality, which allow users access file.
+~~~
+Read:
+Pass number of sector to 0x5001
+Send command to 0x5002
+Once the transfer is finished, the 0x5003 would be 1. 
+And the content of specified sector would be in 0x5100.
 
+Write:
+Pass number of sector to 0x5001
+Send command to 0x5002
+The content in 0x5100 would be flushed into specified sector
+
+Command
+D_COMM_NONE 0
+D_COMM_WRITE 1
+D_COMM_READ 2
+~~~
 
 # SerenityASM #
 ##Usage##

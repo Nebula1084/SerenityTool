@@ -1,18 +1,27 @@
 #include "MipsCPU.h"
 #include <conio.h>
+#include <string.h>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include "SysPara.h"
 
 using namespace std;
-MipsCPU::~MipsCPU(){}
 MipsCPU::MipsCPU(): MMU( MMU_SIZE, VMADR){
+	disk = fopen("SVD.vhd","rb+");
+	if (disk == NULL) {
+		cout << "open failed" << endl;
+		exit(-1);
+	}
 	rgf[0]=0;	//$zero
 	PC=0;
 	MMU.print();
 	debug=false;
 	cpf[$STATE] = 0x00000001;
+}
+
+MipsCPU::~MipsCPU(){
+	fclose(disk);
 }
 
 void MipsCPU::boot(ifstream &fin)
@@ -31,7 +40,25 @@ void MipsCPU::run(){
 	int keycode;
 	char c = 'r';
 	char numstr[20];
-	while(c!='q'){		
+	int comm;
+	int sector;
+	while(c!='q'){
+		if ((comm=MMU.getData(DCOMM))!=D_COMM_NONE){
+			MMU.sh(DSIGN, 0);
+			sector = MMU.getData(DADDR);
+			fseek(disk, 512*sector, SEEK_SET);
+			switch(comm){				
+				case D_COMM_WRITE:					
+					fwrite(MMU.getMemory()+DCONT, 512, 1, disk);
+				break;
+				case D_COMM_READ:
+					fread(MMU.getMemory()+DCONT, 512, 1, disk);					
+				break;
+			}
+			MMU.sh(DSIGN, 1);
+			MMU.sh(DCOMM, 0);
+			MMU.sh(DCONT+256+1, 0);
+		}
 		if (kbhit()){
 			keycode = getch();
 			if (keycode==224){
