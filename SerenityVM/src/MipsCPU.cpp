@@ -42,6 +42,7 @@ void MipsCPU::run(){
 	char numstr[20];
 	int comm;
 	int sector;
+	int p=0;
 	while(c!='q'){
 		if ((comm=MMU.getData(DCOMM))!=D_COMM_NONE){
 			MMU.sh(DSIGN, 0);
@@ -69,12 +70,13 @@ void MipsCPU::run(){
 			cpf[$CAUSE] = $KBINT;
 			cpf[$STATE] = cpf[$STATE] | 0x00000002;
 		}
-		if (chkInt()) {
+		if (chkInt()) {			
 			cpf[$EPC] = PC;
 			cpf[$STATE] = cpf[$STATE] & 0xFFFFFFFE;
 			PC = INTENTRY;			
 		}		
-		IR=MMU.lw(PC);		
+		IR=MMU.lw(PC);
+		// cout << hex << PC<<"========" << IR << endl;
 		PC+=2;						//16-bit/byte
 	//R:	op:6,rs:5,rt:5,rd:5,sft:5,fun:6
 	//I:	op:6,$rs:5,$rt:5,dat:16
@@ -206,15 +208,15 @@ void MipsCPU::run(){
 				break;
 			case 16:
 				operation = "ERET";
-				PC = cpf[$EPC];
+				PC = cpf[$EPC];				
 				cpf[$STATE] = cpf[$STATE] | 0x00000001;
 				break;
 			default:
 				operation = "ERROR!!!";
-				cout << "\nError!\n" << endl;
-				cout << "op is " << op << endl;
-				cout << "rs is " << rs << endl;
-				cout << operation << " opcode:" << hex << op << " rd:" << rd << " rs:" << rs << " rt:" << rt << " sft:" << sft << " data:" << dat << " address:"<< adr << endl;
+				// cout << "\nError!\n" << endl;
+				// cout << "op is " << op << endl;
+				// cout << "rs is " << rs << endl;
+				// cout << operation << " opcode:" << hex << op << " rd:" << rd << " rs:" << rs << " rt:" << rt << " sft:" << sft << " data:" << dat << " address:"<< adr << endl;
 				getch();
 				break;
 			}
@@ -327,7 +329,7 @@ void MipsCPU::run(){
 				int showAdr;			
 				scanf("%x", &showAdr);				
 				while (getch() != 'q' && showAdr < MMU_SIZE){
-					cout << "0x" << setw(8) << showAdr << ":" << setw(4) <<MMU.getData(showAdr) << endl;
+					cout << "0x" << hex << setw(8) << showAdr << ":" << setw(4) << hex <<MMU.getData(showAdr) << endl;
 					showAdr++;
 				}
 			} else {

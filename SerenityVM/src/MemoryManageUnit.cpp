@@ -11,7 +11,7 @@ int MemoryManageUnit::lw(int adr)   //Big_Endian
 void MemoryManageUnit::sw(int adr, int dat)
     {
         adrChk(adr);
-        adrChk(adr+1);
+        adrChk(adr+1);    
         memory[adr+0]=(short)(dat>>16);
         memory[adr+1]=(short)(dat&0xFFFF);
     }
@@ -22,8 +22,9 @@ int MemoryManageUnit::lh(int adr)
     }
 void MemoryManageUnit::sh(int adr, int dat)
     {
-        adrChk(adr);        
-        memory[adr]=(short)(dat&0xFFFF);
+        adrChk(adr);
+        memory[adr]=(short)(dat&0xFFFF);        
+     
         if(adr>=CRTadr)
             refresh=true;
     }

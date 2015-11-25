@@ -17,7 +17,7 @@
 
         mfc0 	$t0, $c2       #$t0 = State 
         lui  	$t2, 0xFFFF
-        ori  	$t2, $t2, 0xFFFE
+        ori  	$t2, $t2, 0xFFFC
         and  	$t0, $t0, $t2 
         mtc0 	$t0, $c2       #disable interrupt
         pop  	$t0    #pop EPC
