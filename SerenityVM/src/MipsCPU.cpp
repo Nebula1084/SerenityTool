@@ -6,6 +6,7 @@
 #include <fstream>
 #include "SysPara.h"
 #include "KeyCode.h"
+#include "Log.h"
 
 using namespace std;
 MipsCPU::MipsCPU(): MMU( MMU_SIZE, VMADR){
@@ -71,6 +72,7 @@ void MipsCPU::run(){
 				keycode = KeyCode::toVKC(0, keycode);
 			}
 			MMU.sw(BKADR, keycode);
+			Log::logFile << hex << setw(4) <<MMU.getData(BKADR) << setw(4) << MMU.getData(BKADR+1) << endl;
 			cpf[$CAUSE] = $KBINT;
 			cpf[$STATE] = cpf[$STATE] | 0x00000002;
 		}
@@ -175,7 +177,7 @@ void MipsCPU::run(){
 				mask = 0x7fffffff;
 				mask = mask>>(rgf[rs]-1);									
 				rgf[rd]=rgf[rt]>>rgf[rs];
-				rgf[rd]=rgf[rd]&&mask;
+				rgf[rd]=rgf[rd]&mask;
 				break;
 			case 7:		//SRAV				
 				operation = "SRAV "+SysPara::rgNm[rd]+","+SysPara::rgNm[rt]+","+SysPara::rgNm[rs];

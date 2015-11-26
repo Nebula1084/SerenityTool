@@ -1,12 +1,9 @@
 #include "KeyCode.h"
 
 int KeyCode::toVKC(int f, int s){
-	using namespace std;
-	ofstream fout;
-	int mask = 0x00010000;
-	fout.open("log.txt", ios::app);
-	fout << hex << f << " " << s << endl;
-	fout.close();
+	using namespace std;	
+	int mask = 0x00010000;	
+	// logFile << hex << f << " " << s << endl;	
 	if (f == 224){
 		switch(s){
 			case 0x48: //UP

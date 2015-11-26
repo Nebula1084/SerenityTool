@@ -2,6 +2,8 @@
 #include <fstream>
 #include <iostream>
 #include <string.h>
+#include <KeyCode.h>
+#include <Log.h>
 
 using namespace std;
 int main(int argc, char const *argv[])
@@ -25,7 +27,8 @@ int main(int argc, char const *argv[])
 		fin.open(fileName);
 	}
 	mipsCPU.boot(fin);	
-	mipsCPU.run();
+	mipsCPU.run();	
 	fin.close();
+	Log::logFile.close();
 	return 0;
 }

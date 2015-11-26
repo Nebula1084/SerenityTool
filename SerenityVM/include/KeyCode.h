@@ -4,7 +4,7 @@
 #include <fstream>
 
 namespace KeyCode{
-	int toVKC(int f, int s);
+	int toVKC(int f, int s);	
 }
 
 #endif

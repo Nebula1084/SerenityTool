@@ -3,3 +3,4 @@
 		.2byte 0x4100   # printstr
     	.2byte 0x4200   # putchar
 		.2byte 0x4300 	# getchar
+		.2byte 0x4400
