@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <fstream>
 #include "SysPara.h"
+#include "KeyCode.h"
 
 using namespace std;
 MipsCPU::MipsCPU(): MMU( MMU_SIZE, VMADR){
@@ -63,8 +64,11 @@ void MipsCPU::run(){
 		if (kbhit()){
 			keycode = getch();
 			if (keycode==224){
+				int ff = keycode;
 				keycode = getch();
-				keycode+=100;
+				keycode = KeyCode::toVKC(ff, keycode);
+			} else {
+				keycode = KeyCode::toVKC(0, keycode);
 			}
 			MMU.sh(BKADR, keycode);
 			cpf[$CAUSE] = $KBINT;

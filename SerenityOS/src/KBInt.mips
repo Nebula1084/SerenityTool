@@ -23,7 +23,13 @@
 #			addi	$t2, $a1, 0x2F02		
 #			sh		$a3, 0($t2)
 #			sh		$a1, 0x2F01($zero)
-						
+
+			mfc0    $t0, $c2        #$t0 = State
+        	lui     $t1, 0xFFFF
+        	ori     $t1, $t1, 0xFFFD
+        	and     $t0, $t0, $t1
+        	mtc0    $t0, $c2        #State = State[31:2],2'b01 #enable interrupt
+			
 END:		pop		$t2
 			pop		$t1
 			pop 	$t0

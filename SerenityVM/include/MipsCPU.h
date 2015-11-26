@@ -4,6 +4,7 @@
 #include <MemoryManageUnit.h>
 #include <fstream>
 #include <stdio.h>
+#include <KeyCode.h>
 
 #define MMU_SIZE 0x5202
 #define INITSP 0x2FFE
