@@ -70,7 +70,7 @@ void MipsCPU::run(){
 			} else {
 				keycode = KeyCode::toVKC(0, keycode);
 			}
-			MMU.sh(BKADR, keycode);
+			MMU.sw(BKADR, keycode);
 			cpf[$CAUSE] = $KBINT;
 			cpf[$STATE] = cpf[$STATE] | 0x00000002;
 		}
