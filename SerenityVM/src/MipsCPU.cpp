@@ -150,10 +150,14 @@ void MipsCPU::run(){
 				operation = "SRL "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+numstr;				
 				mask;
 				if (rt==0) break;
+				if (sft==0) {
+					rgf[rd]=rgf[rt];
+					break;
+				}
 				mask = 0x7fffffff;
 				mask = mask>>(sft-1);									
 				rgf[rd]=rgf[rt]>>sft;
-				rgf[rd]=rgf[rd]&&mask;
+				rgf[rd]=rgf[rd]&mask;
 				break;
 			case 3:		//SRA
 				itoa(sft, numstr, 10);

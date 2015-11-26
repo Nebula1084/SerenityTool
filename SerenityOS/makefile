@@ -3,6 +3,8 @@ SLINK	= SerenityLINK.exe
 MV = copy
 RM = del
 
+ALL: SerenityOS.bit FileSys.bit
+
 SerenityOS.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit  bin\putchar.bit bin\KBInt.bit bin\editor.bit bin\getchar.bit
 	$(SLINK) -o SerenityOS.bit \
 		bin\IntEntry.bit \
@@ -14,6 +16,19 @@ SerenityOS.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\pr
 		bin\putchar.bit \
 		bin\KBInt.bit \
 		bin\editor.bit \
+		bin\getchar.bit
+
+FileSys.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit  bin\putchar.bit bin\KBInt.bit bin\filetest.bit bin\getchar.bit
+	$(SLINK) -o FileSys.bit \
+		bin\IntEntry.bit \
+		bin\SysEntry.bit \
+		bin\IVT.bit \
+		bin\TVT.bit \
+		bin\print.bit \
+		bin\printstr.bit \
+		bin\putchar.bit \
+		bin\KBInt.bit \
+		bin\filetest.bit \
 		bin\getchar.bit
 
 bin\\%.bit: src\%.mips
