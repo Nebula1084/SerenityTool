@@ -1,0 +1,41 @@
+.ORIGIN 	0x4700
+			push	$v0
+			push	$a1
+			push	$a2
+			push	$a3
+			push	$t0
+			push 	$t1
+			push	$t2
+
+			addi	$t0, $zero, 1
+			sw 		$t0, 0x4FFE($zero) 			
+#			lh		$a3, 0x5000($zero)		# KB input(ASCII)
+#			lh		$a0, 0x2F00($zero)		# front pointer
+#			lh 		$a1, 0x2F01($zero)		# rear pointer
+#			addi 	$a1, $a1, 1
+#			addi	$t0, $zero, 250
+#			ble		$a1, $t0, SKIPSUB1		# if ($a1 <= 0x250) goto SKIPSUB1
+#			addi	$a1, $a1, -250			
+#SKIPSUB1:	addi	$t1, $a1, 1
+#			ble		$t1, $t0, SKIPSUB2		# if ($a1 <= 0x250) goto SKIPSUB2
+#			addi	$t1, $t1, -250
+#SKIPSUB2:	beq		$t1, $a1, END			# if (($a0 + 1) % 250 == $a1)				
+#			addi	$t2, $a1, 0x2F02		
+#			sh		$a3, 0($t2)
+#			sh		$a1, 0x2F01($zero)
+
+			mfc0    $t0, $c2        #$t0 = State
+        	lui     $t1, 0xFFFF
+        	ori     $t1, $t1, 0xFFFD
+        	and     $t0, $t0, $t1
+        	mtc0    $t0, $c2        #State = State[31:2],2'b01 #enable interrupt
+			
+END:		pop		$t2
+			pop		$t1
+			pop 	$t0
+			pop		$a3
+			pop		$a2
+			pop		$a1
+			pop		$v0
+			
+			jr		$ra

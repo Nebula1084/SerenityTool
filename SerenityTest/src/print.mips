@@ -1,0 +1,13 @@
+.ORIGIN 0x4000
+		push	$a0				#$a0, character that would be printed
+		push	$a1				#$a1, the offset to which the character would output
+		
+		addi	$a1, $a1, 0x3000
+		sh		$a0, 0($a1)
+		
+		pop		$a1
+		pop		$a0
+		jr		$ra
+
+# syscall $v0 = 0
+# a0 ASCII of the char to be output	

@@ -1,19 +1,26 @@
-SerenityOS.bit: IntEntry.bit SysEntry.bit IVT.bit TVT.bit
-	SerenityLINK.exe -o SerenityOS.bit \
-		IntEntry.bit \
-		SysEntry.bit \
-		IVT.bit \
-		TVT.bit
+SASM	= SerenityASM.exe
+SLINK	= SerenityLINK.exe
+MV = copy
+RM = del
 
-IntEntry.bit: IntEntry.mips
-	SerenityASM.exe IntEntry.mips
+SerenityOS.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit  bin\putchar.bit bin\KBInt.bit bin\editor.bit bin\getchar.bit
+	$(SLINK) -o SerenityOS.bit \
+		bin\IntEntry.bit \
+		bin\SysEntry.bit \
+		bin\IVT.bit \
+		bin\TVT.bit \
+		bin\print.bit \
+		bin\printstr.bit \
+		bin\putchar.bit \
+		bin\KBInt.bit \
+		bin\editor.bit \
+		bin\getchar.bit
+
+bin\\%.bit: src\%.mips
+	$(SASM)	$<
+	$(MV)	src\*.bit bin\*.bit
+	$(RM)	src\*.bit
 	
-SysEntry.bit: SysEntry.mips
-	SerenityASM.exe SysEntry.mips
-
-IVT.bit: IVT.mips
-	SerenityASM.exe IVT.mips
-
-TVT.bit: TVT.mips
-	SerenityASM.exe TVT.mips
-	
+.PHONY: clean
+clean:
+	$(RM) bin/*.bit *.bit

@@ -1,0 +1,514 @@
+.ORIGIN 0x4700
+# $s0   BUFFER base
+# $s1   mem[IN]
+# $s2   mem[OUT]
+# $s3   (mem[IN]+1)%BUFFER SIZE
+# $s4   mem[Scancode]
+# $s5   Virtual key code
+# $s6   mem[Extended]
+
+        beq     $zero, $zero, main
+
+IN: .2Byte      0x0
+OUT:.2Byte      0x0
+
+BUFFER:
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+    .2Byte      0x0
+
+main:
+        push    $s0
+        push    $s1
+        push    $s2
+        push    $s3
+        push    $s4
+        push    $s5
+        push    $s6
+        push    $t0
+        push    $t1
+        
+
+        la      $s0,BUFFER          # $s0 = BUFFER BASE
+        la      $s1,IN      
+        lw      $s1,0($s1)          # $s1 = mem[IN]
+        la      $s2,OUT
+        lw      $s2,0($s1)          # $s2 = mem[OUT]
+        addi    $s3, $s1, 1         # $s3 = mem[IN] + 1
+        sltiu   $t0, $s3, 16
+        beq     $t0, $zero, SUB     # if($s3 >= 16) goto SUB;
+        beq     $zero, $zero, NOT_SUB # else goto NOT_SUB;
+SUB:
+        li      $s3, 0              # $s3 = $s3 % 16
+NOT_SUB:
+        beq     $s3, $s2, END       # if(full) goto END
+        lh      $s4, 0x5000($zero)  # $s4 = mem[Scancode]
+
+        li      $t0, 0xe0
+        beq     $t0, $s4, SET_Extended  # if(Scancode = 0xE0) goto SET_Extended
+        la      $t0, Extended
+        lw      $s6, 0($t0)         # $s6 = mem[Extended]
+        sw      $zero, 0($t0)       # mem[Extended] = false
+        li      $t0, 0xF0
+        beq     $t0, $s4, SET_F0    # if(Scancode = 0xF0) goto SET_F0
+
+        la      $t0, F0
+        lw      $t0, 0($t0)         # $t0 = mem[F0]
+        beq     $t0, $zero, NOT_F0    # if(mem[F0] != 1) goto NOT_F0;
+        beq     $zero, $zero, Clear_F0 # else goto Clear_F0;
+NOT_F0:
+        beq     $s6, $zero, NOT_Extended # if($t0 == 0) goto NOT_Extended
+
+        la      $t0, Extended_Table # $t0 = Extended_Table
+Extended_Scan_Loop:
+        lw      $t1, 0($t0)         # $t1 = mem[$t0]
+        beq     $t1, $s4, EQUAL
+        beq     $zero, $zero, NOT_EQUAL
+EQUAL:                              #if $s4(mem[Scancode]) == $t1(mem[$t0])
+        addi    $t0, $t0, 2
+        lw      $s5, 0($t0)         # $s5 = Virtual Key Code
+        beq     $zero, $zero, Write_Buffer  # goto Write_Buffer
+NOT_EQUAL:
+        addi    $t0, $t0, 4         # $t0 = $t0 + 4
+        la      $t1, Extended_Table
+        addi    $t1, $t1, 68        # $t1 = Extended_Table + 68
+        sltu    $t1, $t0, $t1
+        beq     $t1, $zero, END     # if($t0 >= Extended_Table + 68) goto END;
+        beq     $zero, $zero, Extended_Scan_Loop   # goto Extended_Scan_Loop
+
+NOT_Extended:
+        sltiu   $t0, $s4, 0x84
+        beq     $t0, $zero, END     # if(Scancode >= 84) goto END;
+
+        la      $t0, Shift
+        lw      $t0, 0($t0)         # $t0 = mem[Shift]
+        beq     $t0, $zero, NOT_Shift # if($t0 == 0) goto NOT_Shift
+
+        la      $t0, Shift_Table    # $t0 = Shift_Table
+        beq     $zero, $zero, END_IF
+NOT_Shift:
+        la      $t0, Table          # $t0 = Table
+END_IF:
+        add     $t0, $t0, $s4       
+        add     $t0, $t0, $s4       # $t0 = $t0 + 2*Scancode
+        lw      $s5, 0($t0)         # $s5 = mem[$t0];
+        beq     $zero, $zero, Write_Buffer
+
+
+SET_Extended:
+        la      $t0, Extended
+        li      $t1, 1
+        sw      $t1, 0($t0)         # mem[Extended] = true
+        beq     $zero, $zero, END
+SET_F0:
+        la      $t0, F0
+        li      $t1, 1
+        sw      $t1, 0($t0)         # mem[F0] = true
+        beq     $zero, $zero, END
+SET_Shift:
+        la      $t0, Shift
+        li      $t1, 1
+        sw      $t1, 0($t0)         # mem[Shift] = true
+        beq     $zero, $zero, END
+Switch_Caps:
+        la      $t0, Caps
+        lw      $t1, 0($t0)
+        xori    $t1, $t1, 1         # $t1 = mem[Caps]^0x0001
+        sw      $t1, 0($t0)         # mem[Caps] = $t1
+        beq     $zero, $zero, END
+Clear_F0:
+        la      $t0, F0
+        sw      $zero, 0($t0)       # mem[F0] = false
+        li      $t0, 0x12
+        beq     $s4, $t0, Clear_Shift
+        li      $t0, 0x59
+        beq     $s4, $t0, Clear_Shift
+        beq     $zero, $zero, END
+Clear_Shift:
+        la      $t0, Shift
+        sw      $zero, 0($t0)       # mem[Shift] = false
+        beq     $zero, $zero, END
+Clear_Caps:
+        la      $t0, Caps
+        sw      $zero, 0($t0)       # mem[Caps] = false
+        beq     $zero, $zero, END
+
+Write_Buffer:
+        li      $t0, 0x10000
+        beq     $t0, $s5, END       # if(Virtual Key Code == 0x10000) goto END
+
+        la      $t0, Caps
+        lw      $t0, 0($t0)         # $t0 = mem[Caps]
+
+        beq     $t0, $zero, NOT_Caps
+        sltiu   $t0, $s5, 0x61
+        addi    $t0, $t0, -1
+        beq     $t0, $zero, NOT_Caps
+        sltiu   $t0, $s5, 0x7b
+        beq     $t0, $zero, NOT_Caps
+        addi    $s5, $s5, 0xFFE0
+NOT_Caps:
+        add     $t0, $s0, $s1       # $t0 = BUFFER BASE + IN
+        sw      $s5, 0($t0)         # mem[$t0] = Virtual Key Code
+
+#        add     $v0, $zero, $s5
+#        addi    $v1, $zero, 1
+
+        la      $t0, IN
+        sw      $s3, 0($t0)         # mem[IN] = $s3
+
+        li      $t0, 0x10010
+        beq     $s5, $t0, SET_Shift # if(Virtual Key Code == 0x10010) goto SET_Shift;
+
+        li      $t0, 0x10014
+        beq     $s5, $t0, Switch_Caps  # if(Virtual Key Code == 0x10014) goto Switch_Caps;
+
+
+
+
+END:
+        mfc0    $t0, $c2        #$t0 = State
+        lui     $t1, 0xFFFF
+        ori     $t1, $t1, 0xFFFD
+        and     $t0, $t0, $t1
+        mtc0    $t0, $c2        #State = State[31:2],2'b0x #enable interruption to be accepted
+        pop     $t1
+        pop     $t0
+        pop     $s6
+        pop     $s5
+        pop     $s4
+        pop     $s3
+        pop     $s2
+        pop     $s1
+        pop     $s0
+        jr      $ra
+
+
+
+
+#Data
+Caps:
+    .2Byte      0x0
+Shift:
+    .2Byte      0x0
+Extended:
+    .2Byte      0x0
+F0:
+    .2Byte      0x0
+
+Table:
+    .2Byte  0x10000
+    .2Byte  0x10078
+    .2Byte  0x10000
+    .2Byte  0x10074
+    .2Byte  0x10072
+    .2Byte  0x10070
+    .2Byte  0x10071
+    .2Byte  0x1007b
+    .2Byte  0x10000
+    .2Byte  0x10079
+    .2Byte  0x10077
+    .2Byte  0x10075
+    .2Byte  0x10073
+    .2Byte  0x09
+    .2Byte  0x60
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10012
+    .2Byte  0x10010
+    .2Byte  0x10000
+    .2Byte  0x10011
+    .2Byte  0x71
+    .2Byte  0x31
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x7a
+    .2Byte  0x73
+    .2Byte  0x61
+    .2Byte  0x77
+    .2Byte  0x32
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x63
+    .2Byte  0x78
+    .2Byte  0x64
+    .2Byte  0x65
+    .2Byte  0x34
+    .2Byte  0x33
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x20
+    .2Byte  0x76
+    .2Byte  0x66
+    .2Byte  0x74
+    .2Byte  0x72
+    .2Byte  0x35
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x6e
+    .2Byte  0x62
+    .2Byte  0x68
+    .2Byte  0x67
+    .2Byte  0x79
+    .2Byte  0x36
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x6d
+    .2Byte  0x6a
+    .2Byte  0x75
+    .2Byte  0x37
+    .2Byte  0x38
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x2C
+    .2Byte  0x6b
+    .2Byte  0x69
+    .2Byte  0x6f
+    .2Byte  0x30
+    .2Byte  0x39
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x2e
+    .2Byte  0x2f
+    .2Byte  0x6c
+    .2Byte  0x3b
+    .2Byte  0x70
+    .2Byte  0x2d
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x27
+    .2Byte  0x10000
+    .2Byte  0x5b
+    .2Byte  0x3d
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10014
+    .2Byte  0x10010
+    .2Byte  0x0d
+    .2Byte  0x5d
+    .2Byte  0x10000
+    .2Byte  0x5c
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x08
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x31
+    .2Byte  0x10000
+    .2Byte  0x34
+    .2Byte  0x37
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x30
+    .2Byte  0x2E
+    .2Byte  0x32
+    .2Byte  0x35
+    .2Byte  0x36
+    .2Byte  0x38
+    .2Byte  0x1b
+    .2Byte  0x10090
+    .2Byte  0x1007a
+    .2Byte  0x2b
+    .2Byte  0x33
+    .2Byte  0x2d
+    .2Byte  0x2a
+    .2Byte  0x39
+    .2Byte  0x10091
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10076
+
+Shift_Table:
+    .2Byte  0x10000
+    .2Byte  0x10078
+    .2Byte  0x10000
+    .2Byte  0x10074
+    .2Byte  0x10072
+    .2Byte  0x10070
+    .2Byte  0x10071
+    .2Byte  0x1007b
+    .2Byte  0x10000
+    .2Byte  0x10079
+    .2Byte  0x10077
+    .2Byte  0x10075
+    .2Byte  0x10073
+    .2Byte  0x09
+    .2Byte  0x7e
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10012
+    .2Byte  0x10010
+    .2Byte  0x10000
+    .2Byte  0x10011
+    .2Byte  0x51
+    .2Byte  0x21
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x5a
+    .2Byte  0x53
+    .2Byte  0x41
+    .2Byte  0x57
+    .2Byte  0x40
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x43
+    .2Byte  0x58
+    .2Byte  0x44
+    .2Byte  0x45
+    .2Byte  0x24
+    .2Byte  0x23
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x20
+    .2Byte  0x56
+    .2Byte  0x46
+    .2Byte  0x54
+    .2Byte  0x52
+    .2Byte  0x25
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x4e
+    .2Byte  0x42
+    .2Byte  0x48
+    .2Byte  0x47
+    .2Byte  0x59
+    .2Byte  0x5e
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x4d
+    .2Byte  0x4a
+    .2Byte  0x55
+    .2Byte  0x26
+    .2Byte  0x2a
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x3c
+    .2Byte  0x4b
+    .2Byte  0x49
+    .2Byte  0x4f
+    .2Byte  0x29
+    .2Byte  0x28
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x3e
+    .2Byte  0x3f
+    .2Byte  0x4c
+    .2Byte  0x3a
+    .2Byte  0x50
+    .2Byte  0x5F
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x22
+    .2Byte  0x10000
+    .2Byte  0x7B
+    .2Byte  0x2b
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10014
+    .2Byte  0x10010
+    .2Byte  0x0d
+    .2Byte  0x7d
+    .2Byte  0x10000
+    .2Byte  0x7c
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x08
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x31
+    .2Byte  0x10000
+    .2Byte  0x34
+    .2Byte  0x37
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x30
+    .2Byte  0x2E
+    .2Byte  0x32
+    .2Byte  0x35
+    .2Byte  0x36
+    .2Byte  0x38
+    .2Byte  0x1b
+    .2Byte  0x10090
+    .2Byte  0x1007a
+    .2Byte  0x2b
+    .2Byte  0x33
+    .2Byte  0x2d
+    .2Byte  0x2a
+    .2Byte  0x39
+    .2Byte  0x10091
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10000
+    .2Byte  0x10076
+
+Extended_Table:
+    .2Byte  0x11
+    .2Byte  0x10012
+    .2Byte  0x14
+    .2Byte  0x10011
+    .2Byte  0x1F
+    .2Byte  0x1005b
+    .2Byte  0x27
+    .2Byte  0x1005c
+    .2Byte  0x2F
+    .2Byte  0x1005d
+    .2Byte  0x4A
+    .2Byte  0x2F
+    .2Byte  0x5A
+    .2Byte  0x10000
+    .2Byte  0x69
+    .2Byte  0x10023
+    .2Byte  0x6B
+    .2Byte  0x10025
+    .2Byte  0x6C
+    .2Byte  0x10024
+    .2Byte  0x70
+    .2Byte  0x1002d
+    .2Byte  0x71
+    .2Byte  0x1002e
+    .2Byte  0x72
+    .2Byte  0x10028
+    .2Byte  0x74
+    .2Byte  0x10027
+    .2Byte  0x75
+    .2Byte  0x10026
+    .2Byte  0x7A
+    .2Byte  0x10022
+    .2Byte  0x7D
+    .2Byte  0x10021

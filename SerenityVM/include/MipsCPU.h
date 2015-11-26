@@ -14,10 +14,10 @@
 #define INTADR 0x4600
 #define IVTADR 0x4B00
 #define INTENTRY 0x4F00
-#define BKADR 0x4999
-#define DADDR 0x5001
-#define DCOMM 0x5002
-#define DSIGN 0x5003
+#define BKADR 0x5000
+#define DADDR 0x5002
+#define DCOMM 0x5003
+#define DSIGN 0x5004
 #define DCONT 0x5100
 
 #define D_COMM_NONE 0
