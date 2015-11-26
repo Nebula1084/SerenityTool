@@ -149,8 +149,7 @@ void MipsCPU::run(){
 				break;
 			case 2:		//SRL				
 				itoa(sft, numstr, 10);
-				operation = "SRL "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+numstr;				
-				mask;
+				operation = "SRL "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+numstr;								
 				if (rt==0) break;
 				if (sft==0) {
 					rgf[rd]=rgf[rt];
@@ -302,18 +301,19 @@ void MipsCPU::run(){
 			break;
 		case 12:	//ANDI			
 			itoa(dat, numstr, 10);
+			mask = 0x0000ffff;
 			operation = "ANDI "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;
-			rgf[rt]=rgf[rs]&dat;
+			rgf[rt]=rgf[rs]&(dat&mask);
 			break;
 		case 13:	//ORI			
 			itoa(dat, numstr, 10);
 			operation = "ORI "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;
-			rgf[rt]=rgf[rs]|dat;
+			rgf[rt]=rgf[rs]|(dat&0x0000ffff);
 			break;
 		case 14:	//XORI
 			itoa(dat, numstr, 10);
 			operation = "XORI "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;			
-			rgf[rt]=rgf[rs]^dat;			
+			rgf[rt]=rgf[rs]^(dat&0x0000ffff);			
 			break;
 		case 15:	//LUI
 			itoa(dat, numstr, 10);
