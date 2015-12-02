@@ -15,9 +15,9 @@
 #define IVTADR 0x4B00
 #define INTENTRY 0x4F00
 #define BKADR 0x5000
-#define DADDR 0x5002
-#define DCOMM 0x5003
-#define DSIGN 0x5004
+#define DADDR 0x50FC
+#define DCOMM 0x50FE
+#define DSIGN 0x50FF
 #define DCONT 0x5100
 
 #define D_COMM_NONE 0

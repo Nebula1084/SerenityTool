@@ -21,4 +21,5 @@
 2. when delete the last character and the cursor will change the line
 3. when you type too many characters(nearly 1000)
 4. when you type a lot of characters, the editor will be slow
+5. left or right when change the right
 ~~~

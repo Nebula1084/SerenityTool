@@ -8,6 +8,7 @@
 
 #include "Instruction.hpp"
 #include "AssembleInfo.hpp"
+#include "global.hpp"
 #include <set>
 #include <iostream>
 #include <fstream>
@@ -277,8 +278,8 @@ bool Instruction::split()
                     comma = true;
                     if (!lastIsStr) {
                         if (immatoi(str) == errorIns)
-                            return false;
-                        operand.push_back("int_" + str);
+                            operand.push_back("lbl_" + str);
+                        else operand.push_back("int_" + str);
                         str = "";
                     }
                 }
@@ -298,8 +299,8 @@ bool Instruction::split()
             return false;
         if (str != "") {
             if (immatoi(str) == errorIns)
-                return false;
-            operand.push_back("int_" + str);
+                operand.push_back("lbl_" + str);
+            else operand.push_back("int_" + str);
         }
         return true;
     }
@@ -480,7 +481,9 @@ void Instruction::printErrorInfo(ErrorInfo errorInfo)
             cout << "Unknown error" << endl;
             break;
     }
-    throw errorIns;
+    if (fout.is_open())
+        fout.close();
+    exit(0);
 }
 
 
@@ -492,9 +495,12 @@ int Instruction::actualLinage()   // 伪指令实际行数
         return 2;
     if (opName == "abs" || opName == "swap" || opName == "sne" || opName == "seq")
         return 3;
-    if (opName == "li" || opName == "la") {
+    if (opName == "li")
         return 2;
-    }
+    if (opName == "la")
+        return 3;
+    if (opName == "jal")
+        return 4;
     if (opName == ".asciiz") {
         int linage = 0;
         for (vector<AssemblyCode>::iterator itr = operand.begin(); itr != operand.end(); itr++) {
@@ -720,7 +726,7 @@ MachineCode Instruction::assemble(AssembleInfo &assembleInfo, map<Label, Address
     return errorIns;
 }
 
-void Instruction::assemble(AssembleInfo &assembleInfo, ofstream &fout)
+void Instruction::assemble(AssembleInfo &assembleInfo, ofstream &fout, map<Label, Address> &labelTable)
 {}
 
 

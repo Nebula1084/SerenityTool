@@ -58,7 +58,7 @@ public:
     virtual void translate(vector<Instruction *> &instructionSet, map<Label, Address> &labelTable);  // 伪指令翻译为标准指令
   //  virtual MachineCode assemble(AssembleInfo assembleInfo);  // 正式转机器码
     virtual MachineCode assemble(AssembleInfo &assembleInfo, map<Label, Address> &labelTable, int actualLine);  // 正式转机器码
-    virtual void assemble(AssembleInfo &assembleInfo, ofstream &fout);  // 为FormationIns重载
+    virtual void assemble(AssembleInfo &assembleInfo, ofstream &fout, map<Label, Address> &labelTable);  // 为FormationIns重载
 };
 
 typedef vector<Instruction> Instructions;

@@ -9,4 +9,5 @@
 #include "global.hpp"
 
 unsigned int base = 0;
+ofstream fout;
 map<string, MachineCode> equTable;

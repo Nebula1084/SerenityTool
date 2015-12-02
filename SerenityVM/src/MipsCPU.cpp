@@ -6,6 +6,7 @@
 #include <fstream>
 #include "SysPara.h"
 #include "KeyCode.h"
+#include "Log.h"
 
 using namespace std;
 MipsCPU::MipsCPU(): MMU( MMU_SIZE, VMADR){
@@ -43,18 +44,30 @@ void MipsCPU::run(){
 	char numstr[20];
 	int comm;
 	int sector;
-	int p=0;
+	int p=0;	
 	while(c!='q'){
 		if ((comm=MMU.getData(DCOMM))!=D_COMM_NONE){
 			MMU.sh(DSIGN, 0);
-			sector = MMU.getData(DADDR);
+			sector = MMU.lw(DADDR);
 			fseek(disk, 512*sector, SEEK_SET);
+			short tmp,tmp1;
 			switch(comm){				
-				case D_COMM_WRITE:					
-					fwrite(MMU.getMemory()+DCONT, 512, 1, disk);
+				case D_COMM_WRITE:
+					Log::logFile << "Write" << DCONT << endl;
+					for (int i=0; i<256; i++){
+						tmp = *(MMU.getMemory()+DCONT+2*i)<<8 + *(MMU.getMemory()+DCONT+2*i+1);
+						fwrite(&tmp, 2, 1, disk);	
+					}					
 				break;
 				case D_COMM_READ:
-					fread(MMU.getMemory()+DCONT, 512, 1, disk);					
+					Log::logFile << "Read" << DCONT << endl;
+					for (int i=0; i<256; i++){						
+						fread(&tmp, 2, 1, disk);
+						Log::logFile << "first" << hex << tmp << endl;		
+						tmp = ((tmp >> 8) & 0x00FF) + (tmp << 8);
+						Log::logFile << "second" << hex << tmp << endl;						
+						MMU.sh(DCONT+i, tmp);
+					}					
 				break;
 			}
 			MMU.sh(DSIGN, 1);
@@ -71,6 +84,7 @@ void MipsCPU::run(){
 				keycode = KeyCode::toVKC(0, keycode);
 			}
 			MMU.sw(BKADR, keycode);
+			// Log::logFile << hex << setw(4) <<MMU.getData(BKADR) << setw(4) << MMU.getData(BKADR+1) << endl;
 			cpf[$CAUSE] = $KBINT;
 			cpf[$STATE] = cpf[$STATE] | 0x00000002;
 		}
@@ -147,13 +161,16 @@ void MipsCPU::run(){
 				break;
 			case 2:		//SRL				
 				itoa(sft, numstr, 10);
-				operation = "SRL "+SysPara::rgNm[rd]+","+SysPara::rgNm[rs]+","+numstr;				
-				mask;
+				operation = "SRL "+SysPara::rgNm[rd]+","+SysPara::rgNm[rt]+","+numstr;								
 				if (rt==0) break;
+				if (sft==0) {
+					rgf[rd]=rgf[rt];
+					break;
+				}
 				mask = 0x7fffffff;
 				mask = mask>>(sft-1);									
 				rgf[rd]=rgf[rt]>>sft;
-				rgf[rd]=rgf[rd]&&mask;
+				rgf[rd]=rgf[rd]&mask;
 				break;
 			case 3:		//SRA
 				itoa(sft, numstr, 10);
@@ -162,16 +179,12 @@ void MipsCPU::run(){
 				break;
 			case 4:		//SLLV				
 				operation = "SLLV "+SysPara::rgNm[rd]+","+SysPara::rgNm[rt]+","+SysPara::rgNm[rs];
-				rgf[rd]=rgf[rt]<<rgf[rs];
+				rgf[rd]=(unsigned int)rgf[rt]<<rgf[rs];
 				break;
 			case 6:		//SRLV
 				operation = "SRLV "+SysPara::rgNm[rd]+","+SysPara::rgNm[rt]+","+SysPara::rgNm[rs];
-				mask;
-				if (rt==0) break;
-				mask = 0x7fffffff;
-				mask = mask>>(rgf[rs]-1);									
-				rgf[rd]=rgf[rt]>>rgf[rs];
-				rgf[rd]=rgf[rd]&&mask;
+				mask;									
+				rgf[rd]=(unsigned int)rgf[rt]>>rgf[rs];			
 				break;
 			case 7:		//SRAV				
 				operation = "SRAV "+SysPara::rgNm[rd]+","+SysPara::rgNm[rt]+","+SysPara::rgNm[rs];
@@ -296,18 +309,19 @@ void MipsCPU::run(){
 			break;
 		case 12:	//ANDI			
 			itoa(dat, numstr, 10);
+			mask = 0x0000ffff;
 			operation = "ANDI "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;
-			rgf[rt]=rgf[rs]&dat;
+			rgf[rt]=rgf[rs]&(dat&mask);
 			break;
 		case 13:	//ORI			
 			itoa(dat, numstr, 10);
 			operation = "ORI "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;
-			rgf[rt]=rgf[rs]|dat;
+			rgf[rt]=rgf[rs]|(dat&0x0000ffff);
 			break;
 		case 14:	//XORI
 			itoa(dat, numstr, 10);
 			operation = "XORI "+SysPara::rgNm[rt]+","+SysPara::rgNm[rs]+","+numstr;			
-			rgf[rt]=rgf[rs]^dat;			
+			rgf[rt]=rgf[rs]^(dat&0x0000ffff);			
 			break;
 		case 15:	//LUI
 			itoa(dat, numstr, 10);

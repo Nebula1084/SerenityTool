@@ -25,10 +25,12 @@
       <file leaf-file-name="Main.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/serenity/comm/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.3488372">
-              <caret line="42" column="18" selection-start-line="42" selection-start-column="18" selection-end-line="42" selection-end-column="18" />
+            <state vertical-scroll-proportion="0.7411765">
+              <caret line="82" column="36" selection-start-line="82" selection-start-column="36" selection-end-line="82" selection-end-column="36" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#1419#1420#0" expanded="true" />
+                <element signature="e#1455#1456#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -38,7 +40,7 @@
         <entry file="file://$PROJECT_DIR$/src/serenity/disk/VirtualDisk.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="42" column="26" selection-start-line="42" selection-start-column="26" selection-end-line="42" selection-end-column="26" />
+              <caret line="24" column="18" selection-start-line="24" selection-start-column="18" selection-end-line="24" selection-end-column="18" />
               <folding />
             </state>
           </provider>
@@ -58,11 +60,8 @@
         <entry file="file://$PROJECT_DIR$/src/serenity/disk/MBR.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="56" column="39" selection-start-line="56" selection-start-column="39" selection-end-line="56" selection-end-column="39" />
-              <folding>
-                <element signature="e#1129#1130#0" expanded="true" />
-                <element signature="e#1166#1167#0" expanded="true" />
-              </folding>
+              <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -86,9 +85,9 @@
       <list>
         <option value="$PROJECT_DIR$/src/serenity/disk/Main.java" />
         <option value="$PROJECT_DIR$/src/serenity/disk/Partition.java" />
-        <option value="$PROJECT_DIR$/src/serenity/disk/MBR.java" />
-        <option value="$PROJECT_DIR$/src/serenity/disk/VirtualDisk.java" />
         <option value="$PROJECT_DIR$/src/serenity/comm/Main.java" />
+        <option value="$PROJECT_DIR$/src/serenity/disk/VirtualDisk.java" />
+        <option value="$PROJECT_DIR$/src/serenity/disk/MBR.java" />
       </list>
     </option>
   </component>
@@ -131,7 +130,7 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -200,7 +199,7 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
+      <pane id="Scope" />
       <pane id="Scratches" />
     </panes>
   </component>
@@ -385,7 +384,7 @@
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32941177" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -439,9 +438,47 @@
     <entry file="file://$PROJECT_DIR$/src/serenity/comm/Main.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1419#1420#0" expanded="true" />
+            <element signature="e#1455#1456#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/serenity/disk/VirtualDisk.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="42" column="26" selection-start-line="42" selection-start-column="26" selection-end-line="42" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/serenity/disk/Partition.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="14" column="27" selection-start-line="14" selection-start-column="27" selection-end-line="14" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/serenity/disk/MBR.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="56" column="39" selection-start-line="56" selection-start-column="39" selection-end-line="56" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/serenity/comm/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
           <caret line="92" column="0" selection-start-line="92" selection-start-column="0" selection-end-line="92" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#1419#1420#0" expanded="true" />
+            <element signature="e#1455#1456#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -466,10 +503,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="38" column="26" selection-start-line="38" selection-start-column="26" selection-end-line="38" selection-end-column="26" />
-          <folding>
-            <element signature="e#1129#1130#0" expanded="true" />
-            <element signature="e#1166#1167#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -479,6 +513,8 @@
           <caret line="92" column="0" selection-start-line="92" selection-start-column="0" selection-end-line="92" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#1419#1420#0" expanded="true" />
+            <element signature="e#1455#1456#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -503,10 +539,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="38" column="26" selection-start-line="38" selection-start-column="26" selection-end-line="38" selection-end-column="26" />
-          <folding>
-            <element signature="e#1129#1130#0" expanded="true" />
-            <element signature="e#1166#1167#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -516,6 +549,8 @@
           <caret line="92" column="0" selection-start-line="92" selection-start-column="0" selection-end-line="92" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#1419#1420#0" expanded="true" />
+            <element signature="e#1455#1456#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -540,10 +575,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="38" column="26" selection-start-line="38" selection-start-column="26" selection-end-line="38" selection-end-column="26" />
-          <folding>
-            <element signature="e#1129#1130#0" expanded="true" />
-            <element signature="e#1166#1167#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -558,28 +590,27 @@
     <entry file="file://$PROJECT_DIR$/src/serenity/disk/MBR.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="56" column="39" selection-start-line="56" selection-start-column="39" selection-end-line="56" selection-end-column="39" />
-          <folding>
-            <element signature="e#1129#1130#0" expanded="true" />
-            <element signature="e#1166#1167#0" expanded="true" />
-          </folding>
+          <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/serenity/disk/VirtualDisk.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="42" column="26" selection-start-line="42" selection-start-column="26" selection-end-line="42" selection-end-column="26" />
+          <caret line="24" column="18" selection-start-line="24" selection-start-column="18" selection-end-line="24" selection-end-column="18" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/serenity/comm/Main.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3488372">
-          <caret line="42" column="18" selection-start-line="42" selection-start-column="18" selection-end-line="42" selection-end-column="18" />
+        <state vertical-scroll-proportion="0.7411765">
+          <caret line="82" column="36" selection-start-line="82" selection-start-column="36" selection-end-line="82" selection-end-column="36" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#1419#1420#0" expanded="true" />
+            <element signature="e#1455#1456#0" expanded="true" />
           </folding>
         </state>
       </provider>

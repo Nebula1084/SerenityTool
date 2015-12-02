@@ -54,7 +54,8 @@ public class MBR {
             for (int j = 0; j < 16; j++)
                 pbytes[j] = bytes[0x01BE + i * 16 + j];
             pte[i] = new PTE(pbytes);
-            System.out.println("partion" + pte[i].getSectors_preceding());
+            System.out.println("preceding" + pte[i].getSectors_preceding());
+            System.out.println("length" + pte[i].getLength());
         }
     }
 }

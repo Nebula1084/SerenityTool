@@ -40,23 +40,31 @@ For instance, insrtuction `SerenityVM.exe boot.bit` would execute the binary fil
 the Serenity VM support simple text mode, which support all `Zhe standard code`. The memory whose address is after `0x3000` is video memory, where we could write code and the screen would display correspondent character. By the way, the program could not exit but could be halted by `ctrl+c`.
 ##Virtual Disk
 Now, Serenity VM support virtual disk functionality, which allow users access file.
+###Memory Layout
 ~~~
-Read:
-Pass number of sector to 0x5001
-Send command to 0x5002
-Once the transfer is finished, the 0x5003 would be 1. 
-And the content of specified sector would be in 0x5100.
-
-Write:
-Pass number of sector to 0x5001
-Send command to 0x5002
-The content in 0x5100 would be flushed into specified sector
-
-Command
+50FC offset
+50FD 
+50FE command
+50FF ready
+5100 block buffer
+51FF
+~~~
+###Command
+Pass number of sector to 0x50FC which is the address of offset.
+Send command to 0x50FE and the ready whose adress is 50FF would indicate the status of current
+disk access
+~~~
 D_COMM_NONE 0
 D_COMM_WRITE 1
 D_COMM_READ 2
+
+BUSY 0
+READY 1
 ~~~
+
+###Tips
+use **sw** and **lw** instruction to access offset and use **sh** and **lh** access command. And
+ready could only be accessed by **lh**.
 
 # SerenityASM #
 ##Usage##

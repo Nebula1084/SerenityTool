@@ -1,4 +1,4 @@
-.ORIGIN 	0x4300
+.ORIGIN     0x4180
 
 # $s0	BUFFER
 # $s1	mem[IN]

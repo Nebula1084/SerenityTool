@@ -1,4 +1,4 @@
-.ORIGIN 0x4100
+.ORIGIN 0x4080
 		push	$a0					#$a0, initial position of str waiting to be printed
 		push	$a1					#$a1, the offset to which the character would output
 		push	$t0					#every single character

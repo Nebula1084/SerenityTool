@@ -11,8 +11,10 @@
 
 #include "CommonTypedef.hpp"
 #include <map>
+#include <fstream>
 
 extern unsigned int base;
+extern ofstream fout;
 extern map<string, MachineCode> equTable;
 
 #endif /* global_hpp */

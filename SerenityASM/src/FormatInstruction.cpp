@@ -7,6 +7,7 @@
 //
 
 #include "FormatInstruction.hpp"
+#include "global.hpp"
 #include <iomanip>
 #include <iostream>
 
@@ -19,7 +20,7 @@ FormatInstruction::FormatInstruction()
 FormatInstruction::~FormatInstruction()
 {}
 
-void FormatInstruction::assemble(AssembleInfo &assembleInfo, ofstream &fout)
+void FormatInstruction::assemble(AssembleInfo &assembleInfo, ofstream &fout, map<Label, Address> &labelTable)
 {
     OpName opName = getOpName();
     if (opName == ".orgin")
@@ -49,10 +50,18 @@ void FormatInstruction::assemble(AssembleInfo &assembleInfo, ofstream &fout)
             if (str.at(0) == 's')
                 for (int i = 4; i < str.size(); i++)
                     print(str.at(i) - '\0', fout);
-            else print(immatoi(str.substr(4, str.size() - 4)), fout);
+            else if (str.at(0) == 'i')
+                print(immatoi(str.substr(4, str.size() - 4)), fout);
+            else {
+                string label = str.substr(4, str.size() - 4);
+                if (labelTable.find(label) == labelTable.end())
+                    printErrorInfo(No_such_label);
+                int addr = labelTable[label] + base / 2;
+                print(addr, fout);
+            }
         }
     }
-    else if (opName == ".space")  {//
+    else if (opName == ".space")  {
         int num = immatoi(0);
         if (num == errorIns)
             printErrorInfo(Wrong_immediate_number_or_offset);

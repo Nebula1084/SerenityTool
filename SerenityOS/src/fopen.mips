@@ -1,0 +1,154 @@
+.ORIGIN 0x4280
+		push	$s0
+		push	$a0
+		push	$a1
+		push	$a2
+		push	$v0
+		push	$t0
+		push	$ra
+		push	$t1
+		push	$t2
+		
+		#load 0 sector
+		sw		$zero, 0x50FC($zero)
+		addi	$s0, $zero, 2
+		sh		$s0, 0x50FE($zero)
+SUS1:	lh		$s0, 0x50FF($zero)
+		beq		$s0, $zero, SUS1
+		
+		lw		$a0, 0x5100($zero)
+		addi	$a1, $zero, 0
+		addi	$a2, $zero, 0
+		li		$v0, 4
+		syscall
+		
+		li		$t0, 0x5100
+		
+		lw		$a0, 0xE3($t0)			#Sectors preceding partition 1				
+		jal		rever
+		la		$t1, psec
+		sw		$v0, 0x0($t1)
+		
+		lw		$a0, 0xE5($t0)			#length of partition 1 in sector
+		jal		rever
+		la		$t1, plen
+		sw		$v0, 0x0($t1)
+
+		#load BPB of first partition
+		la		$t1, psec
+		lw		$t1, 0x0($t1)
+		sw		$t1, 0x50FC($zero)
+		li		$s0, 2
+		sh		$s0, 0x50FE($zero)
+SUS2:	lh		$s0, 0x50FF($zero)	#suspand
+		beq		$s0, $zero, SUS2		
+				
+		lw		$a0, 0x5100($zero)
+		addi	$a1, $zero, 0
+		addi	$a2, $zero, 0
+		li		$v0, 4
+		syscall	
+		
+		#bytes per sector(pbps)
+		li		$t0, 0x5100		
+		lw		$t1, 0x5($t0)	
+		sll		$a0, $t1, 8				#only two, I move it to the end of word
+		li		$t2, 0xFFFF0000
+		and 	$a0, $a0, $t2				
+		jal		rever
+		move	$a0, $v0
+		la		$t1, pbps
+		sw		$a0, 0x0($t1)
+		
+		addi	$a1, $zero, 1
+		addi	$a2, $zero, 0
+		li		$v0, 4
+		syscall	
+		
+		#sector per cluster(pspc)
+		lw		$t1, 0x6($t0)
+		move	$a0, $t1
+		srl		$a0, $a0, 24
+		la		$t1, pspc
+		sw		$a0, 0x0($t1)
+		li		$a1, 2
+		li		$a2, 0
+		li		$v0, 4		
+		syscall
+		
+		#reserved sector(prs)
+		lw		$t1, 0x7($t0)
+		move	$a0, $t1
+		jal		rever			
+		andi	$a0, $v0, 0xFF
+		la		$t1, prs
+		sw		$a0, 0x0($t1)
+		li		$a1, 10
+		li		$a2, 0
+		li		$v0, 4
+		syscall
+		
+		#number of fat
+		lw		$t1, 0x8($t0)
+		move	$a0, $t1
+		jal		rever
+		andi	$a0, $v0, 0xFF
+		li		$a1, 11
+		li		$a2, 0
+		li		$v0, 4
+		syscall
+		
+		la		$t0, psec
+		lw		$t1, 0x0($t0)
+		la		$t0, prs
+		la		$t0, nof
+		
+		
+		
+		pop		$t2
+		pop		$t1
+		pop		$ra
+		pop		$t0
+		pop		$v0
+		pop		$a2
+		pop		$a1
+		pop		$a0
+		pop		$s0		
+		jr		$ra
+
+#reverse the little-endian data
+rever:	push	$a0
+		push	$t0
+		push	$t1
+		push	$t2
+		push	$t3
+		push	$ra
+		
+		andi	$t0, $a0, 0xFF
+		srl		$t1, $a0, 8
+		andi	$t1, $t1, 0xFF
+		srl		$t2, $a0, 16
+		andi	$t2, $t2, 0xFF
+		srl		$t3, $a0, 24
+		andi 	$t3, $t3, 0xFF
+		sll		$v0, $t0, 24
+		sll		$t1, $t1, 16
+		sll		$t2, $t2, 8
+		add		$v0, $v0, $t1
+		add		$v0, $v0, $t2
+		add		$v0, $v0, $t3
+		
+		pop		$ra
+		pop		$t3
+		pop		$t2
+		pop		$t1
+		pop		$t0
+		pop		$a0
+		jr		$ra
+		
+psec:	.2byte	0x0
+plen:	.2byte	0x0
+pbps:	.2byte	0x0
+pspc:	.2byte	0x0
+prs:	.2byte	0x0
+nof:	.2byte	0x0

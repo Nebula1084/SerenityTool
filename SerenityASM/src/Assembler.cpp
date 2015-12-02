@@ -34,71 +34,65 @@ bool Assembler::openFile(string &fileName)
 
 void Assembler::generateBinaryFile(string &fileName)
 {
-    try {
-        Instructions instructions;
-        InstructionSet instructionSet;
-        formation(instructions);  // 格式处理
-        fout.open(fileName.c_str(), ios_base::binary);
-        getLabelTable(instructions);  // 获得labeltable
-        {
-        vector<Instruction>::iterator itr = instructions.begin();
-        if (itr != instructions.end()) {      // 处理第一行的.origin
-            Instruction firstLine = *itr;
-            if (firstLine.getOpName() == ".origin") {  // 第一行是.origin
-                base = firstLine.immatoi(0, 32, false);
-                if (base == errorIns)
-                    firstLine.printErrorInfo(Illegal_origin_address);
-                if ((base & 1) == 1)
-                    firstLine.printErrorInfo(Illegal_origin_address);
-                //                curLineNumber++;
-                //itr++;
-            }
-            else base = 0;
-            cout << "0x" << uppercase << hex << setfill('0') << setw(8) << base << endl;
-            for (int i = 3; i >= 0; --i)
-                fout.write(((char *)&base) + i, 1);
+    Instructions instructions;
+    InstructionSet instructionSet;
+    formation(instructions);  // 格式处理
+    fout.open(fileName.c_str(), ios_base::binary);
+    getLabelTable(instructions);  // 获得labeltable
+    {
+    vector<Instruction>::iterator itr = instructions.begin();
+    if (itr != instructions.end()) {      // 处理第一行的.origin
+        Instruction firstLine = *itr;
+        if (firstLine.getOpName() == ".origin") {  // 第一行是.origin
+            base = firstLine.immatoi(0, 32, false);
+            if (base == errorIns)
+                firstLine.printErrorInfo(Illegal_origin_address);
+            if ((base & 1) == 1)
+                firstLine.printErrorInfo(Illegal_origin_address);
+            //                curLineNumber++;
+            //itr++;
         }
-        }
-        dealWithPseudo(instructions, instructionSet);  // 处理伪指令
-        
-        //cout << labelTable["exit"] << endl;
-        
-        MachineCode machineCode;  // 汇编后的机器码
-        int curLineNumber = 0;  // 当前行号
-        
-        vector<Instruction *>::iterator itr = instructionSet.begin();
-        if (itr != instructionSet.end()) {      // 处理第一行的.origin
-            Instruction *firstLine = *itr;
-            if (firstLine->getOpName() == ".origin") {  // 第一行是.origin
-//                base = firstLine->immatoi(0, 32, false);
+        else base = 0;
+        cout << "0x" << uppercase << hex << setfill('0') << setw(8) << base << endl;
+        for (int i = 3; i >= 0; --i)
+            fout.write(((char *)&base) + i, 1);
+    }
+    }
+    dealWithPseudo(instructions, instructionSet);  // 处理伪指令
+    //cout << labelTable["exit"] << endl;
+    
+    MachineCode machineCode;  // 汇编后的机器码
+    int curLineNumber = 0;  // 当前行号
+    
+    vector<Instruction *>::iterator itr = instructionSet.begin();
+    if (itr != instructionSet.end()) {      // 处理第一行的.origin
+        Instruction *firstLine = *itr;
+        if (firstLine->getOpName() == ".origin") {  // 第一行是.origin
+//               base = firstLine->immatoi(0, 32, false);
 //                if (base == errorIns)
 //                    firstLine->printErrorInfo(Illegal_origin_address);
 //                if ((base & 1) == 1)
 //                    firstLine->printErrorInfo(Illegal_origin_address);
 //                curLineNumber++;
-                itr++;
-            }
+            itr++;
+        }
 //            else base = 0;
 //            cout << "0x" << uppercase << hex << setfill('0') << setw(8) << base << endl;
 //            for (int i = 3; i >= 0; --i)
 //                fout.write(((char *)&base) + i, 1);
-        }
+    }
 
-        for (; itr != instructionSet.end(); itr++, curLineNumber++) {
-            Instruction *curLine = *itr;
-            if (assembleInfo.insType[curLine->getOpName()] != FormatIns) {
-                machineCode = curLine->assemble(assembleInfo, labelTable, curLineNumber);
-                if (machineCode == errorIns)
-                    curLine->printErrorInfo(Can_not_assemble);
-                cout << "0x" << uppercase << hex << setfill('0') << setw(8) << machineCode << endl;
-                for (int i = 3; i >= 0; --i)
-                    fout.write(((char *)&machineCode) + i, 1);
-            }
-            else curLine->assemble(assembleInfo, fout);
+    for (; itr != instructionSet.end(); itr++, curLineNumber++) {
+        Instruction *curLine = *itr;
+        if (assembleInfo.insType[curLine->getOpName()] != FormatIns) {
+            machineCode = curLine->assemble(assembleInfo, labelTable, curLineNumber);
+            if (machineCode == errorIns)
+                curLine->printErrorInfo(Can_not_assemble);
+            cout << "0x" << uppercase << hex << setfill('0') << setw(8) << machineCode << endl;
+            for (int i = 3; i >= 0; --i)
+                fout.write(((char *)&machineCode) + i, 1);
         }
-    } catch (Instruction ins) {
-        if (fout.is_open())
-            fout.close();
+        else curLine->assemble(assembleInfo, fout, labelTable);
     }
     if (fout.is_open())
         fout.close();

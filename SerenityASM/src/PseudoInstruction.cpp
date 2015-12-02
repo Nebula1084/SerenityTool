@@ -79,34 +79,41 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
     else if (opName == "push") {
         // push $r1 -> addi $sp,$sp,-2
         //             sw $r1,0($sp)
-        if (!checkOperand(1))
+        // push $r1, $r2, ...
+        if (checkOperand(0))
             printErrorInfo(The_amount_of_operand_is_wrong);
-        if (!islegalreg(0))
-            printErrorInfo(No_such_register);
-        newLine = new ImmInstruction;   // addi $sp,$sp,-2
+        unsigned long num = numOfOperand();
+        newLine = new ImmInstruction;   // addi $sp,$sp,-2*num
         if (hasLabel())
             assemblyCode = getLabel() + ": ";
         else assemblyCode = "";
-        assemblyCode = assemblyCode + "addi $sp,$sp,-2";
+        int imm = num * -2;
+        assemblyCode = assemblyCode + "addi $sp,$sp," + immitoa(imm);
         newLine->setAssemblyCode(assemblyCode);
         newLine->setLine(getLine());
         newLine->split();
         instructionSet.push_back(newLine);
-        newLine = new LoadSaveInstruction;  // sw $r1,0($sp)
-        assemblyCode = "sw " + getOperand(0) + ",0($sp)";
-        newLine->setAssemblyCode(assemblyCode);
-        newLine->setLine(getLine());
-        newLine->split();
-        instructionSet.push_back(newLine);
+        for (int i = 0; i < num; i++) {
+            if (!islegalreg(i))
+                printErrorInfo(No_such_register);
+            newLine = new LoadSaveInstruction;  // sw $r1,i * 2($sp)
+            assemblyCode = "sw " + getOperand(i) + "," + immitoa(i * 2) + "($sp)";
+            newLine->setAssemblyCode(assemblyCode);
+            newLine->setLine(getLine());
+            newLine->split();
+            instructionSet.push_back(newLine);
+        }
     }
     else if (opName == "pop") {
         // pop $r1 -> lw $r1,0($sp)
         //            addi $sp,$sp,2
-        if (!checkOperand(1))
+        // pop $r1, $r2, ...
+        if (checkOperand(0))
             printErrorInfo(The_amount_of_operand_is_wrong);
+        unsigned long num = numOfOperand();
         if (!islegalreg(0))
             printErrorInfo(No_such_register);
-        newLine = new LoadSaveInstruction;  // lw $r1,0($sp)
+        newLine = new LoadSaveInstruction;  // lw $r1,i * 2($sp)
         if (hasLabel())
             assemblyCode = getLabel() + ": ";
         else assemblyCode = "";
@@ -115,8 +122,16 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
         newLine->setLine(getLine());
         newLine->split();
         instructionSet.push_back(newLine);
-        newLine = new ImmInstruction;  // addi $sp,$sp,2
-        assemblyCode = "addi $sp,$sp,2";
+        for (int i = 1; i < num; i++) {
+            newLine = new LoadSaveInstruction;
+            assemblyCode = "lw " + getOperand(i) + "," + immitoa(i * 2) + "($sp)";
+            newLine->setAssemblyCode(assemblyCode);
+            newLine->setLine(getLine());
+            newLine->split();
+            instructionSet.push_back(newLine);
+        }
+        newLine = new ImmInstruction;  // addi $sp,$sp,2 * num
+        assemblyCode = "addi $sp,$sp," + immitoa(2 * num);
         newLine->setAssemblyCode(assemblyCode);
         newLine->setLine(getLine());
         newLine->split();
@@ -330,12 +345,12 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
     }
     else if (opName == "li") {
         /*
-         li $r,imme -> 
-            1.imme能用16bit表示
-                addi $r,$zero,imme
-            2.imme不能用16bit表示
-                lui $r,HIGH
-                ori $r,$r,LOW
+         li $r,imme ->
+         1.imme能用16bit表示
+         addi $r,$zero,imme
+         2.imme不能用16bit表示
+         lui $r,HIGH
+         ori $r,$r,LOW
          */
         if (!checkOperand(2))
             printErrorInfo(The_amount_of_operand_is_wrong);
@@ -347,7 +362,7 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
             if (hasLabel())
                 assemblyCode = getLabel() + ": ";
             else assemblyCode = "";
-            assemblyCode = assemblyCode + "addi " + getOperand(0) + ",$zero," + getOperand(1);
+            assemblyCode = assemblyCode + "ori " + getOperand(0) + ",$zero," + getOperand(1);
             newLine->setAssemblyCode(assemblyCode);
             newLine->setLine(getLine());
             newLine->split();
@@ -383,8 +398,8 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
     }
     else if (opName == "la") {
         /*
-         la $r,RR -> 
-            imme表示RR地址, li $r,imme
+         la $r,RR ->
+         imme表示RR地址, li $r,imme
          */
         if (!checkOperand(2))
             printErrorInfo(The_amount_of_operand_is_wrong);
@@ -392,13 +407,13 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
             printErrorInfo(No_such_register);
         if (labelTable.find(getOperand(1)) == labelTable.end())
             printErrorInfo(No_such_label);
-        int imme = labelTable[getOperand(1)] * 2 + base;
+        int imme = labelTable[getOperand(1)] * 2 + base / 2;
         if (imme == (imme & 0x0000ffff))  { // imme可用16bit表示
             newLine = new ImmInstruction; // addi $r,$zero,imme
             if (hasLabel())
                 assemblyCode = getLabel() + ": ";
             else assemblyCode = "";
-            assemblyCode = assemblyCode + "addi " + getOperand(0) + ",$zero," + immitoa(imme);
+            assemblyCode = assemblyCode + "ori " + getOperand(0) + ",$zero," + immitoa(imme);
             newLine->setAssemblyCode(assemblyCode);
             newLine->setLine(getLine());
             newLine->split();
@@ -427,8 +442,74 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
             newLine->split();
             instructionSet.push_back(newLine);
         }
+        newLine = new RegInstruction;
+        assemblyCode = "add " + getOperand(0) + "," + getOperand(0) + ",$gp";
+        newLine->setAssemblyCode(assemblyCode);
+        newLine->setLine(getLine());
+        newLine->split();
+        instructionSet.push_back(newLine);
+    }
+    else if (opName == "jal") {
+        if (numOfOperand() != 1)
+            printErrorInfo(The_amount_of_operand_is_wrong);
+        string addr = getOperand(0);
+        int imme;
+        if (labelTable.find(addr) == labelTable.end()) {  // 不存在该label
+            imme = immatoi(0, 26, false);  // 26位imme
+            if (imme == errorIns)
+                printErrorInfo(Wrong_immediate_number_or_offset);
+        }
+        else imme = labelTable[addr];
+        imme += base / 2;
+        
+        newLine = new ImmInstruction; // lui $r, HIGH
+        if (hasLabel())
+            assemblyCode = getLabel() + ": ";
+        else assemblyCode = "";
+        assemblyCode = assemblyCode + "lui $at," + immitoa((imme & 0xffff0000) >> 16);
+        newLine->setAssemblyCode(assemblyCode);
+        newLine->setLine(getLine());
+        newLine->split();
+        instructionSet.push_back(newLine);
+        newLine = new ImmInstruction; // ori $r,$r,LOW
+        assemblyCode = "ori $at,$at," + immitoa(imme & 0x0000ffff);
+        newLine->setAssemblyCode(assemblyCode);
+        newLine->setLine(getLine());
+        newLine->split();
+        instructionSet.push_back(newLine);
+        newLine = new RegInstruction;
+        assemblyCode = "add $at,$at,$gp";
+        newLine->setAssemblyCode(assemblyCode);
+        newLine->setLine(getLine());
+        newLine->split();
+        instructionSet.push_back(newLine);
+        newLine = new RegInstruction;
+        assemblyCode = "jalr $at,$ra";
+        newLine->setAssemblyCode(assemblyCode);
+        newLine->setLine(getLine());
+        newLine->split();
+        instructionSet.push_back(newLine);
+    }
+    else if (opName == "jd") {
+        if (numOfOperand() != 1)
+            printErrorInfo(The_amount_of_operand_is_wrong);
+        string label = getOperand(0);
+        if (labelTable.find(label) == labelTable.end())
+            printErrorInfo(Wrong_formation);
+        newLine = new JumpInstruction;
+        if (hasLabel())
+            assemblyCode = getLabel() + ": ";
+        else assemblyCode = "";
+        assemblyCode = assemblyCode + "beq $zero,$zero," + label;
+        newLine->setAssemblyCode(assemblyCode);
+        newLine->setLine(getLine());
+        newLine->split();
+        instructionSet.push_back(newLine);
     }
 }
+
+
+
 
 
 

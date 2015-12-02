@@ -1,5 +1,0 @@
-.ORIGIN 0x4B00
-		.2byte		0x4600  #syscall
-		.2byte		0x4700  #KBInt
-		.2byte		0x4800
-		.2byte		0x4900
