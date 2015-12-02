@@ -414,6 +414,8 @@ AssembleInfo::AssembleInfo(){
     insType["seq"] = PseudoIns;
     insType["li"] = PseudoIns;
     insType["la"] = PseudoIns;
+    insType["jd"] = PseudoIns;
+    insType["jal"] = PseudoIns;
     
     insType["eret"]	= SpcIns;
     insType["mul"]	= SpcIns;
@@ -441,7 +443,6 @@ AssembleInfo::AssembleInfo(){
     insType["sw"] = LoadSaveIns;
     
     insType["j"] = JumpIns;
-    insType["jal"] = JumpIns;
     insType["beq"] = JumpIns;
     insType["bne"] = JumpIns;
     insType["bltz"]	= JumpIns;

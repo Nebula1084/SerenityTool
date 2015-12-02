@@ -17,7 +17,7 @@ public:
     FormatInstruction(Instruction &instruction);
     FormatInstruction();
     ~FormatInstruction();
-    void assemble(AssembleInfo &assembleInfo, ofstream &fout);
+    void assemble(AssembleInfo &assembleInfo, ofstream &fout, map<Label, Address> &labelTable);
     void print(MachineCode machineCode, ofstream &fout);
 };
 

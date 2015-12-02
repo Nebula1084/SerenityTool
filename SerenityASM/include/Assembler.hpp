@@ -17,7 +17,6 @@
 class Assembler
 {
     ifstream fin;
-    ofstream fout;
     map<Label, Address> labelTable;
     AssembleInfo assembleInfo;
 public:

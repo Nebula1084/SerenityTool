@@ -23,8 +23,7 @@ MachineCode JumpInstruction::assemble(AssembleInfo &assembleInfo, map<Label, Add
     OpName opName = getOpName();
     MachineCode ins = assembleInfo.opcode[opName];
     int imme;
-    
-    if (opName == "j" || opName == "jal") {  // j adr
+    if (opName == "j") {  // j adr
         if (numOfOperand() != 1)
             printErrorInfo(The_amount_of_operand_is_wrong);
         string addr = getOperand(0);
