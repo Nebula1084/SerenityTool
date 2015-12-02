@@ -39,3 +39,21 @@ END:
                 pop     $s1
                 pop     $s0
                 jr      $ra
+
+TABLE:
+        .2Byte  0x30
+        .2Byte  0x31
+        .2Byte  0x32
+        .2Byte  0x33
+        .2Byte  0x34
+        .2Byte  0x35
+        .2Byte  0x36
+        .2Byte  0x37
+        .2Byte  0x38
+        .2Byte  0x39
+        .2Byte  0x41
+        .2Byte  0x42
+        .2Byte  0x43
+        .2Byte  0x44
+        .2Byte  0x45
+        .2Byte  0x46
