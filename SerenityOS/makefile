@@ -18,7 +18,10 @@ SerenityOS.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\pr
 		bin\editor.bit \
 		bin\getchar.bit
 
-FileSys.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit  bin\putchar.bit bin\KBInt.bit bin\filetest.bit bin\getchar.bit
+FileSys.bit: bin\IntEntry.bit bin\SysEntry.bit \
+	bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit \
+	bin\putchar.bit bin\KBInt.bit bin\filetest.bit bin\getchar.bit \
+	bin\printint.bit bin\fopen.bit
 	$(SLINK) -o FileSys.bit \
 		bin\IntEntry.bit \
 		bin\SysEntry.bit \
@@ -28,8 +31,10 @@ FileSys.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\print
 		bin\printstr.bit \
 		bin\putchar.bit \
 		bin\KBInt.bit \
+		bin\printint.bit \
 		bin\filetest.bit \
-		bin\getchar.bit
+		bin\getchar.bit \
+		bin\fopen.bit
 
 bin\\%.bit: src\%.mips
 	$(SASM)	$<
@@ -38,4 +43,4 @@ bin\\%.bit: src\%.mips
 	
 .PHONY: clean
 clean:
-	$(RM) bin/*.bit *.bit
+	$(RM) bin\*.bit *.bit

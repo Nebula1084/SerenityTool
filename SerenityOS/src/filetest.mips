@@ -1,19 +1,13 @@
-.ORIGIN         0x0
-				li		$s0, 0x00310000
-				sw		$s0, 0x3000($zero)
-				li		$t0, 0xffff0000
-				li		$t1, 0x0000ffff
-				and		$t0, $t0, $s0
-				and		$t1, $t1, $s0
-				srl		$t0, $t0, 16
-				sll		$t1, $t1, 16
-				or		$s0, $t0, $t1
-				sw		$s0, 0x3002($zero)
-#				addi    $sp, $zero, 0x2EFE
- #               la      $a0, str
-  #              addi    $v0, $zero, 1
-   #             addi    $a1, $zero, 10
-    #            syscall
-				
-#exit:			beq		$zero, $zero, exit
-#str:    .asciiz "File System Test"
+.ORIGIN 0x0
+		addi	$sp, $zero, 0x2FFE #initial the stack pointer		
+
+		li		$v0, 5
+		syscall
+		
+		li		$v0, 4
+		li		$a0, 5
+		li		$a1, 17
+		li		$a2, 10
+		syscall
+		
+exit:	beq $zero, $zero, exit

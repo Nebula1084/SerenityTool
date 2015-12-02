@@ -12,20 +12,20 @@ public class VirtualDisk {
 
     public VirtualDisk() {
 
-//        byte[] tmp = new byte[50 * 1024 * 1024];
+        byte[] tmp = new byte[50 * 1024 * 1024];
         try {
-            file = new RandomAccessFile("E:\\Education\\My Resource\\AaI\\SVD.vhd", "rb+");
+            file = new RandomAccessFile("E:\\Education\\My Resource\\AaI\\SVD.vhd", "rw");
 
-//            file.read(tmp, 0, 50 * 1024 * 1024);
-//            mbr = new MBR(tmp);
-//            int pre = mbr.pte[0].getSectors_preceding();
-//            int len = mbr.pte[0].getLength();
-//
-//            for (int i = pre * 512; i < (pre + len) * 512; i++) {
-//                tmp[i - pre * 512] = tmp[i];
-//            }
-//
-//            p = new Partition(tmp);
+            file.read(tmp, 0, 50 * 1024 * 1024);
+            mbr = new MBR(tmp);
+            int pre = mbr.pte[0].getSectors_preceding();
+            int len = mbr.pte[0].getLength();
+
+            for (int i = pre * 512; i < (pre + len) * 512; i++) {
+                tmp[i - pre * 512] = tmp[i];
+            }
+
+            p = new Partition(tmp);
         } catch (IOException e) {
             e.printStackTrace();
         }

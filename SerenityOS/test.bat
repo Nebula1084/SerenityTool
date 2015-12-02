@@ -1,3 +1,3 @@
 mingw32-make
 cls
-"../SerenityTest/SerenityVM" -d FileSys.bit
+"../SerenityTest/SerenityVM" FileSys.bit 

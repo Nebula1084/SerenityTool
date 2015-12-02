@@ -1,4 +1,4 @@
-.ORIGIN 0x4200
+.ORIGIN 0x4100
 		push	$a0				#$a0, character that would be printed
 		push	$a1				#$a1, x
 		push	$a2				#$a2, y

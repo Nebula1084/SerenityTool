@@ -1,4 +1,4 @@
-.ORIGIN 	0x4300
+.ORIGIN 	0x4180
 			push	$t0
 			push	$a0
 			push	$a1
