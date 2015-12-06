@@ -59,7 +59,7 @@ void Assembler::generateBinaryFile(string &fileName)
     }
     }
     dealWithPseudo(instructions, instructionSet);  // 处理伪指令
-    //cout << labelTable["exit"] << endl;
+    cout << labelTable["l1"] << endl;
     
     MachineCode machineCode;  // 汇编后的机器码
     int curLineNumber = 0;  // 当前行号

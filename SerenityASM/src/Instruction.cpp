@@ -491,7 +491,7 @@ int Instruction::actualLinage()   // 伪指令实际行数
 {
     if (opName == ".origin")
         return 0;
-    if (opName == "push" || opName == "pop" || opName == "blt" || opName == "bgt" || opName == "ble" || opName == "bge")
+    if (opName == "blt" || opName == "bgt" || opName == "ble" || opName == "bge")
         return 2;
     if (opName == "abs" || opName == "swap" || opName == "sne" || opName == "seq")
         return 3;
@@ -519,6 +519,8 @@ int Instruction::actualLinage()   // 伪指令实际行数
         }
         return linage;
     }
+    if (opName == "push" || opName == "pop")
+        return numOfOperand() + 1;
     if (opName == ".space") {
         int linage = immatoi(0);
         if (linage == errorIns)
