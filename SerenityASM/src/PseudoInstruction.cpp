@@ -461,6 +461,7 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
         }
         else imme = labelTable[addr];
         imme += base / 2;
+        imme *= 2;
         
         newLine = new ImmInstruction; // lui $r, HIGH
         if (hasLabel())
