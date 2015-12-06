@@ -484,7 +484,7 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
         newLine->split();
         instructionSet.push_back(newLine);
         newLine = new RegInstruction;
-        assemblyCode = "jalr $at,$ra";
+        assemblyCode = "jalr $at";
         newLine->setAssemblyCode(assemblyCode);
         newLine->setLine(getLine());
         newLine->split();
