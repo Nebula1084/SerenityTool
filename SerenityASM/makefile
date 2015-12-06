@@ -25,7 +25,7 @@ $(BIN_DIR)/Assembler.o:	$(INCLUDE_DIR)/Assembler.hpp \
 $(BIN_DIR)/AssembleInfo.o: 	$(INCLUDE_DIR)/AssembleInfo.hpp $(SRC_DIR)/AssembleInfo.cpp
 	$(GCC) -c -o $(BIN_DIR)/AssembleInfo.o $(SRC_DIR)/AssembleInfo.cpp -I$(INCLUDE_DIR)
 
-$(BIN_DIR)/Instruction.o: 	$(INCLUDE_DIR)/Instruction.hpp $(INCLUDE_DIR)/global.hpp
+$(BIN_DIR)/Instruction.o: 	$(INCLUDE_DIR)/Instruction.hpp $(INCLUDE_DIR)/global.hpp \
 	$(INCLUDE_DIR)/AssembleInfo.hpp \
 	$(SRC_DIR)/Instruction.cpp
 	$(GCC) -c -o $(BIN_DIR)/Instruction.o $(SRC_DIR)/Instruction.cpp -I$(INCLUDE_DIR)
