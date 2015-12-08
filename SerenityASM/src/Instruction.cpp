@@ -648,9 +648,11 @@ int Instruction::immatoi(string str, int len, bool issigned)
         radix = 2;
         start = 1;
     }
-    else if (imma.at(0) == '0' && imma.at(1) == 'x') {  // 0xn
-        radix = 16;
-        start = 2;
+    else if (imma.at(0) == '0' && imma.size() > 1) {  // 0xn
+        if (imma.at(1) == 'x') {
+            radix = 16;
+            start = 2;
+        }
     }
     else if (imma.at(0) >= '0' && imma.at(0) <= '9') {  // n
         radix = 10;
