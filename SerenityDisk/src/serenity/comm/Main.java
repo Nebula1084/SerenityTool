@@ -4,7 +4,6 @@ package serenity.comm;
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
-import serenity.disk.VirtualDisk;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,7 +85,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        disk = new VirtualDisk();
 //        try {
 //            (new Main()).connect("COM3");
 //        } catch (Exception e) {

@@ -62,7 +62,7 @@ void append(ofstream& fout, string fileName){
         // cout << "fout.tellp()=" << fout.tellp() << endl;
         // cout << fileName << ":" << origin << endl;
         if (foutOrigin*2 + fout.tellp() > origin*2){
-            cout << "Overlap occurs!!!" << endl;
+            cout << "Overlap occurs while concatenating " << fileName << "!!" << endl;
             exit(1);
         }
         else{

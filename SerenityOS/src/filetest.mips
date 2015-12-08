@@ -1,13 +1,15 @@
 .ORIGIN 0x0
-		addi	$sp, $zero, 0x2FFE #initial the stack pointer		
+		addi	$sp, $zero, 0x2FFE #initial the stack pointer
+		move	$gp, $zero
 
 		li		$v0, 5
 		syscall
 		
 		li		$v0, 4
-		li		$a0, 5
-		li		$a1, 17
-		li		$a2, 10
-		syscall
+		li		$a0, 0x61
+		li		$a1, 0
+		li		$a2, 0
+#		syscall
 		
 exit:	beq $zero, $zero, exit
+		.2byte	exit

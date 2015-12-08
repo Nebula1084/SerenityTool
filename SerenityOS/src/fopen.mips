@@ -3,11 +3,14 @@
 		push	$a0
 		push	$a1
 		push	$a2
+		push	$v1
 		push	$v0
 		push	$t0
 		push	$ra
 		push	$t1
 		push	$t2
+		push	$t3
+		push	$t4
 		
 		#load 0 sector
 		sw		$zero, 0x50FC($zero)
@@ -15,12 +18,6 @@
 		sh		$s0, 0x50FE($zero)
 SUS1:	lh		$s0, 0x50FF($zero)
 		beq		$s0, $zero, SUS1
-		
-		lw		$a0, 0x5100($zero)
-		addi	$a1, $zero, 0
-		addi	$a2, $zero, 0
-		li		$v0, 4
-		syscall
 		
 		li		$t0, 0x5100
 		
@@ -33,6 +30,12 @@ SUS1:	lh		$s0, 0x50FF($zero)
 		jal		rever
 		la		$t1, plen
 		sw		$v0, 0x0($t1)
+		
+		lw		$a0, 0xE1($t0)
+		li		$a1, 2
+		li		$a2, 0
+		li		$v0, 4
+		syscall
 
 		#load BPB of first partition
 		la		$t1, psec
@@ -43,14 +46,9 @@ SUS1:	lh		$s0, 0x50FF($zero)
 SUS2:	lh		$s0, 0x50FF($zero)	#suspand
 		beq		$s0, $zero, SUS2		
 				
-		lw		$a0, 0x5100($zero)
-		addi	$a1, $zero, 0
-		addi	$a2, $zero, 0
-		li		$v0, 4
-		syscall	
 		
 		#bytes per sector(pbps)
-		li		$t0, 0x5100		
+		li		$t0, 0x5100
 		lw		$t1, 0x5($t0)	
 		sll		$a0, $t1, 8				#only two, I move it to the end of word
 		li		$t2, 0xFFFF0000
@@ -58,58 +56,104 @@ SUS2:	lh		$s0, 0x50FF($zero)	#suspand
 		jal		rever
 		move	$a0, $v0
 		la		$t1, pbps
-		sw		$a0, 0x0($t1)
-		
-		addi	$a1, $zero, 1
-		addi	$a2, $zero, 0
-		li		$v0, 4
-		syscall	
+		sw		$a0, 0x0($t1)			#pbps = $a0
 		
 		#sector per cluster(pspc)
 		lw		$t1, 0x6($t0)
 		move	$a0, $t1
-		srl		$a0, $a0, 24
+		srl		$a0, $a0, 16
+		andi	$a0, $a0, 0x0F
 		la		$t1, pspc
-		sw		$a0, 0x0($t1)
-		li		$a1, 2
-		li		$a2, 0
-		li		$v0, 4		
+		sw		$a0, 0x0($t1)		#pspc
+		
+		li		$a1, 5
+		li		$a2, 10
+		li		$v0, 4
 		syscall
 		
 		#reserved sector(prs)
 		lw		$t1, 0x7($t0)
 		move	$a0, $t1
-		jal		rever			
+		jal		rever
 		andi	$a0, $v0, 0xFF
 		la		$t1, prs
-		sw		$a0, 0x0($t1)
-		li		$a1, 10
-		li		$a2, 0
-		li		$v0, 4
-		syscall
+		sw		$a0, 0x0($t1)		#prs
 		
 		#number of fat
 		lw		$t1, 0x8($t0)
 		move	$a0, $t1
 		jal		rever
 		andi	$a0, $v0, 0xFF
-		li		$a1, 11
+		la		$t1, nof
+		sw		$a0, 0x0($t1)		#nof
+				
+		
+		#sector per fat
+		lw		$t1, 0xb($t0)		
+		move	$a0, $t1
+		jal		rever
+		andi	$a0, $v0, 0xFF
+		la		$t1, pspf
+		sw		$a0, 0x0($t1)		#pspf
+
+		#hidden sector
+		lw		$t1, 0xe($t0)
+		move	$a0, $t1
+		jal		rever
+		move	$a0, $v0
+				
+		la		$t0, psec
+		lw		$t1, 0x0($t0)		#$t1=psec
+		la		$t0, prs
+		lw		$t2, 0x0($t0)		#$t2=prs
+		la		$t0, nof
+		lw		$t3, 0x0($t0)		#$t3=nof
+		la		$t0, pspf
+		lw		$t4, 0x0($t0)		#$t4=pspf
+		
+		#load FAT sector
+		add		$t0, $t1, $t2		#$a0=psec+prs FAT = psec+prs
+		move	$a0, $t0
+		sw		$a0, 0x50FC($zero)
+		addi	$s0, $zero, 2
+		sh		$s0, 0x50FE($zero)
+SUS3:	lh		$s0, 0x50FF($zero)
+		beq		$s0, $zero,SUS3
+		li		$a0, 0x3D00
+		jal 	mosec				#move fat sector to 0x3D00
+		
+		mul		$t3, $t3, $t4
+		add		$t0, $t0, $t3
+		move	$a0, $t0			#$a0=psec+prs+nof*pspf
+		li		$a1, 14
+		li		$a2, 0
+		li		$v0, 4
+		syscall	
+		
+		#load DIR sector
+		sw		$a0, 0x50FC($zero)
+		addi	$s0, $zero, 2
+		sh		$s0, 0x50FE($zero)
+SUS4:	lh		$s0, 0x50FF($zero)
+		beq		$s0, $zero, SUS4
+		
+		li		$t0, 0x5100
+		lw		$a0, 0x0($t0)
+		li		$a1, 0
 		li		$a2, 0
 		li		$v0, 4
 		syscall
 		
-		la		$t0, psec
-		lw		$t1, 0x0($t0)
-		la		$t0, prs
-		la		$t0, nof
 		
 		
-		
+		pop		$t4
+		pop		$t3
 		pop		$t2
 		pop		$t1
 		pop		$ra
 		pop		$t0
 		pop		$v0
+		pop		$v1
 		pop		$a2
 		pop		$a1
 		pop		$a0
@@ -152,3 +196,35 @@ pbps:	.2byte	0x0
 pspc:	.2byte	0x0
 prs:	.2byte	0x0
 nof:	.2byte	0x0
+pspf:	.2byte	0x0
+
+#move sector
+mosec:	push	$a0
+		push	$t0
+		push	$t1
+		push	$t2
+		push	$t3
+		push	$t4
+		push	$ra
+		
+		li 		$t0, 0x5100
+		move	$t1, $a0
+		li		$t2, 0x100
+		move	$t3, $zero
+
+mv:		lw		$t4, 0($t0)		# for (i=0; i<100; i++)
+		sw		$t4, 0($t1)		#	s[$t1]=s[$t0]
+		addi	$t0, $t0, 1
+		addi	$t1, $t1, 1
+		addi	$t2, $t2, -1
+		bne		$t2, $zero, mv
+		
+		pop		$ra
+		pop		$t4
+		pop		$t3
+		pop		$t2
+		pop		$t1
+		pop		$t0
+		pop 	$a0
+		
+		jr		$ra
