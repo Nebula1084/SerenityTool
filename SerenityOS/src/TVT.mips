@@ -1,7 +1,7 @@
-.ORIGIN 0x4500
+.ORIGIN 0x4C80
 		.2byte 0x4000   # print
 		.2byte 0x4080   # printstr
     	.2byte 0x4100   # putchar
 		.2byte 0x4180 	# getchar
 		.2byte 0x4200	# printint
-		.2byte 0x4280	# fopen
+		.2byte 0x4280	# init_disk

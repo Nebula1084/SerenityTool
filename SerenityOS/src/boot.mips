@@ -1,4 +1,19 @@
-.ORIGIN 0x4280
+.ORIGIN 0x0
+		addi	$sp, $zero, 0x2FFE #initial the stack pointer
+		move	$gp, $zero
+
+		jal 	init_disk
+		
+		li		$v0, 4
+		li		$a0, 0x61
+		li		$a1, 0
+		li		$a2, 0
+#		syscall
+		
+exit:	beq $zero, $zero, exit
+		.2byte	exit
+		
+init_disk:
 		push	$s0
 		push	$a0
 		push	$a1
@@ -30,12 +45,6 @@ SUS1:	lh		$s0, 0x50FF($zero)
 		jal		rever
 		la		$t1, plen
 		sw		$v0, 0x0($t1)
-		
-		lw		$a0, 0xE1($t0)
-		li		$a1, 2
-		li		$a2, 0
-		li		$v0, 4
-		syscall
 
 		#load BPB of first partition
 		la		$t1, psec
@@ -65,11 +74,6 @@ SUS2:	lh		$s0, 0x50FF($zero)	#suspand
 		andi	$a0, $a0, 0x0F
 		la		$t1, pspc
 		sw		$a0, 0x0($t1)		#pspc
-		
-		li		$a1, 5
-		li		$a2, 10
-		li		$v0, 4
-		syscall
 		
 		#reserved sector(prs)
 		lw		$t1, 0x7($t0)
@@ -125,10 +129,6 @@ SUS3:	lh		$s0, 0x50FF($zero)
 		mul		$t3, $t3, $t4
 		add		$t0, $t0, $t3
 		move	$a0, $t0			#$a0=psec+prs+nof*pspf
-		li		$a1, 14
-		li		$a2, 0
-		li		$v0, 4
-		syscall	
 		
 		#load DIR sector
 		sw		$a0, 0x50FC($zero)
@@ -136,15 +136,7 @@ SUS3:	lh		$s0, 0x50FF($zero)
 		sh		$s0, 0x50FE($zero)
 SUS4:	lh		$s0, 0x50FF($zero)
 		beq		$s0, $zero, SUS4
-		
-		li		$t0, 0x5100
-		lw		$a0, 0x0($t0)
-		li		$a1, 0
-		li		$a2, 0
-		li		$v0, 4
-		syscall
-		
-		
+			
 		
 		pop		$t4
 		pop		$t3

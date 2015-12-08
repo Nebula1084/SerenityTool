@@ -25,8 +25,8 @@ SerenityOS.bit: bin\IntEntry.bit bin\IVT.bit bin\TVT.bit \
 
 FileSys.bit: bin\IntEntry.bit \
 	bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit \
-	bin\putchar.bit bin\filetest.bit bin\getchar.bit \
-	bin\printint.bit bin\fopen.bit
+	bin\putchar.bit bin\boot.bit bin\getchar.bit \
+	bin\printint.bit
 	$(SLINK) -o FileSys.bit \
 		bin\IntEntry.bit \
 		bin\IVT.bit \
@@ -35,9 +35,8 @@ FileSys.bit: bin\IntEntry.bit \
 		bin\printstr.bit \
 		bin\putchar.bit \
 		bin\printint.bit \
-		bin\filetest.bit \
-		bin\getchar.bit \
-		bin\fopen.bit
+		bin\boot.bit \
+		bin\getchar.bit
 
 bin\\%.bit: src\%.mips
 	$(SASM)	$<

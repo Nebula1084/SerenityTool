@@ -11,7 +11,7 @@
 		
 		
 		add     $t1 , $t1, $t1
-		addi    $t1, $t1, 0x4B00        #interrupt vector address
+		addi    $t1, $t1, 0x4D00        #interrupt vector address
 		lw		$t1, 0($t1)	
 		jalr	$t1, $ra				#enter interrupt service
 
