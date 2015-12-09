@@ -3,12 +3,13 @@
 		move	$gp, $zero
 
 		jal 	init_disk
+		jal		dir
 		
 		li		$v0, 4
 		li		$a0, 0x61
 		li		$a1, 0
 		li		$a2, 0
-#		syscall
+		#syscall
 		
 exit:	beq $zero, $zero, exit
 		.2byte	exit
@@ -28,11 +29,8 @@ init_disk:
 		push	$t4
 		
 		#load 0 sector
-		sw		$zero, 0x50FC($zero)
-		addi	$s0, $zero, 2
-		sh		$s0, 0x50FE($zero)
-SUS1:	lh		$s0, 0x50FF($zero)
-		beq		$s0, $zero, SUS1
+		move	$a0, $zero
+		jal		load_sector
 		
 		li		$t0, 0x5100
 		
@@ -49,11 +47,8 @@ SUS1:	lh		$s0, 0x50FF($zero)
 		#load BPB of first partition
 		la		$t1, psec
 		lw		$t1, 0x0($t1)
-		sw		$t1, 0x50FC($zero)
-		li		$s0, 2
-		sh		$s0, 0x50FE($zero)
-SUS2:	lh		$s0, 0x50FF($zero)	#suspand
-		beq		$s0, $zero, SUS2		
+		move	$a0, $t1
+		jal		load_sector	
 				
 		
 		#bytes per sector(pbps)
@@ -118,11 +113,7 @@ SUS2:	lh		$s0, 0x50FF($zero)	#suspand
 		#load FAT sector
 		add		$t0, $t1, $t2		#$a0=psec+prs FAT = psec+prs
 		move	$a0, $t0
-		sw		$a0, 0x50FC($zero)
-		addi	$s0, $zero, 2
-		sh		$s0, 0x50FE($zero)
-SUS3:	lh		$s0, 0x50FF($zero)
-		beq		$s0, $zero,SUS3
+		jal		load_sector
 		li		$a0, 0x3D00
 		jal 	mosec				#move fat sector to 0x3D00
 		
@@ -131,12 +122,9 @@ SUS3:	lh		$s0, 0x50FF($zero)
 		move	$a0, $t0			#$a0=psec+prs+nof*pspf
 		
 		#load DIR sector
-		sw		$a0, 0x50FC($zero)
-		addi	$s0, $zero, 2
-		sh		$s0, 0x50FE($zero)
-SUS4:	lh		$s0, 0x50FF($zero)
-		beq		$s0, $zero, SUS4
-			
+		jal		load_sector
+		li		$a0, 0x3E00
+		jal		mosec
 		
 		pop		$t4
 		pop		$t3
@@ -151,6 +139,26 @@ SUS4:	lh		$s0, 0x50FF($zero)
 		pop		$a0
 		pop		$s0		
 		jr		$ra
+		
+#load sector
+load_sector:
+		push	$a0
+		push	$s0
+		
+		sw		$a0, 0x50FC($zero)
+		addi	$s0, $zero, 2
+		sh		$s0, 0x50FE($zero)
+SUS_L:	lh		$s0, 0x50FF($zero)
+		beq		$s0, $zero, SUS_L
+		
+		la		$s0, SYS_SEC_BUF
+		sw		$a0, 0x0($s0)
+		
+		pop		$a0
+		pop		$s0
+		jr		$ra
+
+
 
 #reverse the little-endian data
 rever:	push	$a0
@@ -220,3 +228,185 @@ mv:		lw		$t4, 0($t0)		# for (i=0; i<100; i++)
 		pop 	$a0
 		
 		jr		$ra
+	
+dir:	push	$ra
+		push	$t0
+		push	$t1
+		push	$t2
+		push	$t3
+		push	$t4
+		push	$t5
+		push	$a0
+		push	$a1
+		push	$a2
+		push	$v0
+		push	$s0
+		push	$s1
+				
+		li		$t0, 0x3E00
+		move	$t1, $zero
+		li		$t2, 16
+s_dir:	mul		$t3, $t1, $t2		#while(dir[0]!=0)
+		add		$t4, $t3, $t0
+		
+		lw		$t5, 0x0($t4)
+		beq		$t5, $zero, s_fin
+		move	$a0, $t5
+		move	$a1, $t1			#$a1 line number
+		li		$a2, 0
+		li		$v0, 4
+				
+		addi	$t5, $t4, 5			#property
+		lh		$t5, 0x0($t5)		#$t5 P
+		
+		addi	$t1, $t1, 1			#initial cluster
+		addi	$t6, $t4, 13		#$t6 I
+		lh		$t6, 0x0($t6)
+		
+		andi	$t5, $t5, 0xFF
+		li		$s0, 0x20			# if( P&0xFF != | I == 0 ) continue
+		bne		$t5, $s0, s_dir
+		beq		$t6, $zero, s_dir	
+		move	$a3, $t4
+		jal		p_n
+		j		s_dir
+s_fin:	
+		pop		$s1
+		pop		$s0
+		pop		$v0
+		pop		$a0
+		pop		$a1
+		pop		$a2
+		pop		$t5
+		pop		$t4
+		pop		$t3
+		pop		$t2
+		pop		$t1
+		pop		$t0
+		pop		$ra
+		jr		$ra
+		
+p_n:	
+		push	$a0
+		push	$a1
+		push	$ra
+		push	$a2
+		push	$a3
+		push	$v0
+		push	$t0
+		push	$t1
+		push	$t2
+		push	$s0
+		push	$s1
+		push	$s3
+		push	$s4
+		
+		move	$s4, $a1			#line number
+		li		$s3, 0x20
+		la		$t1, ln				#dest
+		move	$t2, $a3			#source
+f_nam:	lh		$t0, 0x0($t2)
+		srl		$s1, $t0, 8			#high 8 bit
+		beq		$s1, $s3, f_ext		#if ($s1==' ') break;		
+		sh		$s1, 0x0($t1)
+		addi	$t1, $t1, 1
+		andi	$s2, $t0, 0x0FF		#low 8 bit
+		
+		beq		$s2, $s3, f_ext		#if ($s1==' ') break;
+		sh		$s2, 0x0($t1)
+		addi	$t1, $t1, 1	
+		addi	$t2, $t2, 1
+			 		
+		j		f_nam
+
+f_ext:	li		$s0, 0x2E
+		sh		$s0, 0x0($t1)
+		addi	$t1, $t1, 1
+		sh		$zero, 0x0($t1)
+		
+		addi	$t2, $a3, 4
+		
+		lh		$t0, 0x0($t2)
+		srl		$s1, $t0, 8			#high 8 bit
+		beq		$s1, $s3, f_p		#if ($s1==' ') break;		
+		sh		$s1, 0x0($t1)
+		addi	$t1, $t1, 1
+		andi	$s2, $t0, 0x0FF		#low 8 bit		
+		beq		$s2, $s3, f_p		#if ($s1==' ') break;
+		sh		$s2, 0x0($t1)
+		addi	$t1, $t1, 1	
+		addi	$t2, $t2, 1
+		
+		lh		$t0, 0x0($t2)
+		srl		$s1, $t0, 8			#high 8 bit
+		beq		$s1, $s3, f_p		#if ($s1==' ') break;		
+		sh		$s1, 0x0($t1)
+		addi	$t1, $t1, 1
+		sh		$zero, 0x0($t1)
+		
+		
+f_p:	la		$a0, ln
+		li		$a2, 40
+		mul		$a1, $a2, $s4
+		li		$v0, 1	
+		syscall
+			
+		pop		$s4
+		pop		$s3		
+		pop		$s1
+		pop		$s0
+		pop		$t2
+		pop		$t1
+		pop		$t0
+		pop		$v0
+		pop		$a3
+		pop		$a2
+		pop		$ra
+		pop		$a1
+		pop		$a0
+		
+		jr		$ra
+
+ln:		.asciiz	"namenamen"
+
+lt:		.asciiz	"namenamen"
+
+fopen:
+#	$a0, pointer to input string
+#	$v0, return value which indicate whether open operation success or not
+#			@success: 1		@error: 0
+
+		push	$a0
+		push	$ra
+		
+		la		$t0, F_OPEN
+		lw		$t1, 0x0($t0)			#check whether file pointer has been initialized
+		beq		$t1, $zero, open_file	#if file hasn't been opened
+		move	$v0, $zero
+		j		open_exit
+		
+open_file:
+		li		$v0, 1
+		
+open_exit:
+		pop		$ra
+		pop		$a0
+		
+		jr		$ra
+		
+F_OPEN:			.2byte	0x0
+F_NAME:			.asciiz "12345678.123"
+F_OFFSET:		.2byte	0x0
+SYS_SEC_BUF:	.2byte	0x0
+
+fseek:	push	$ra
+		pop		$ra
+
+fread:	push	$ra
+		pop		$ra
+		
+fwrite:	push	$ra
+		pop		$ra
+
+fclose:	push	$ra
+		pop		$ra
