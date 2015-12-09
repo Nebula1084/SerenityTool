@@ -81,7 +81,7 @@ void Assembler::generateBinaryFile(string &fileName)
 //                fout.write(((char *)&base) + i, 1);
     }
 
-    for (; itr != instructionSet.end(); itr++, curLineNumber++) {
+    for (; itr != instructionSet.end(); itr++) {
         Instruction *curLine = *itr;
         if (assembleInfo.insType[curLine->getOpName()] != FormatIns) {
             machineCode = curLine->assemble(assembleInfo, labelTable, curLineNumber);
@@ -90,8 +90,12 @@ void Assembler::generateBinaryFile(string &fileName)
             cout << "0x" << uppercase << hex << setfill('0') << setw(8) << machineCode << endl;
             for (int i = 3; i >= 0; --i)
                 fout.write(((char *)&machineCode) + i, 1);
+            curLineNumber++;
         }
-        else curLine->assemble(assembleInfo, fout, labelTable);
+        else {
+            curLine->assemble(assembleInfo, fout, labelTable);
+            curLineNumber += curLine->actualLinage();
+        }
     }
     if (fout.is_open())
         fout.close();
