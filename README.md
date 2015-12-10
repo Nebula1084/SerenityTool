@@ -36,6 +36,16 @@ When virtual machine execute a instruction which is illegal, the virtual machine
 The Virtual machine could be used in following way.<br>
 `SerenityVM.exe file`<br>
 For instance, insrtuction `SerenityVM.exe boot.bit` would execute the binary file `boot.bit`. And the using option `-d` could specify the debug mode, like `SerenityVM.exe -d boot.bit`.
+###Command m
+	m address
+would display memroy content from specified `address`.
+###Command g
+	g address
+virtual machine would execute continuously until PC attains specified `address`.
+###Command b
+	b
+In debug mode and execute continuously, the virtual machine would stop
+when you hit key `b`.
 ##Display##
 the Serenity VM support simple text mode, which support all `Zhe standard code`. The memory whose address is after `0x3000` is video memory, where we could write code and the screen would display correspondent character. By the way, the program could not exit but could be halted by `ctrl+c`.
 ##Virtual Disk

@@ -1,20 +1,23 @@
 .ORIGIN 0x0
 		addi	$sp, $zero, 0x2FFE #initial the stack pointer
-		move	$gp, $zero
-
+		move	$gp, $zero		
 		jal 	init_disk
+
 		jal		dir
+		#jal		fopen
 		
 		li		$v0, 4
 		li		$a0, 0x61
 		li		$a1, 0
 		li		$a2, 0
-		#syscall
+		syscall
 		
 exit:	beq $zero, $zero, exit
 		.2byte	exit
+#open_name:
+#		.asciiz "AB      TXT"
 		
-init_disk:
+init_disk:		
 		push	$s0
 		push	$a0
 		push	$a1
@@ -26,7 +29,7 @@ init_disk:
 		push	$t1
 		push	$t2
 		push	$t3
-		push	$t4
+		push	$t4				
 		
 		#load 0 sector
 		move	$a0, $zero
@@ -49,7 +52,7 @@ init_disk:
 		lw		$t1, 0x0($t1)
 		move	$a0, $t1
 		jal		load_sector	
-				
+						
 		
 		#bytes per sector(pbps)
 		li		$t0, 0x5100
@@ -108,7 +111,7 @@ init_disk:
 		la		$t0, nof
 		lw		$t3, 0x0($t0)		#$t3=nof
 		la		$t0, pspf
-		lw		$t4, 0x0($t0)		#$t4=pspf
+		lw		$t4, 0x0($t0)		#$t4=pspf			
 		
 		#load FAT sector
 		add		$t0, $t1, $t2		#$a0=psec+prs FAT = psec+prs
@@ -137,7 +140,7 @@ init_disk:
 		pop		$a2
 		pop		$a1
 		pop		$a0
-		pop		$s0		
+		pop		$s0
 		jr		$ra
 		
 #load sector
@@ -157,8 +160,6 @@ SUS_L:	lh		$s0, 0x50FF($zero)
 		pop		$a0
 		pop		$s0
 		jr		$ra
-
-
 
 #reverse the little-endian data
 rever:	push	$a0
@@ -229,6 +230,7 @@ mv:		lw		$t4, 0($t0)		# for (i=0; i<100; i++)
 		
 		jr		$ra
 	
+#------------dir command-------------------	
 dir:	push	$ra
 		push	$t0
 		push	$t1
@@ -285,7 +287,8 @@ s_fin:
 		pop		$t0
 		pop		$ra
 		jr		$ra
-		
+
+#-----------print name------------------
 p_n:	
 		push	$a0
 		push	$a1
@@ -371,13 +374,28 @@ ln:		.asciiz	"namenamen"
 
 lt:		.asciiz	"namenamen"
 
+#-------------------fopen------------------
 fopen:
 #	$a0, pointer to input string
 #	$v0, return value which indicate whether open operation success or not
 #			@success: 1		@error: 0
 
 		push	$a0
+		push	$a1
+		push	$a2
 		push	$ra
+		push	$t0
+		push	$t1
+		push	$t2
+		push	$t3
+		push	$t4
+		push	$t5
+		push	$t6
+		push	$s0
+		push	$s1
+		push	$v0
+				
+		move	$s1, $a0				#file name
 		
 		la		$t0, F_OPEN
 		lw		$t1, 0x0($t0)			#check whether file pointer has been initialized
@@ -388,8 +406,57 @@ fopen:
 open_file:
 		li		$v0, 1
 		
+		li		$t0, 0x3E00
+		move	$t1, $zero
+		li		$t2, 16
+o_dir:	mul		$t3, $t1, $t2		#while(dir[0]!=0)
+		add		$t4, $t3, $t0		#$t4 head of each line
+		
+		lw		$t5, 0x0($t4)
+		beq		$t5, $zero, s_fin
+		move	$a0, $t5
+		move	$a1, $t1			#$a1 line number
+		li		$a2, 0
+		li		$v0, 4
+				
+		addi	$t5, $t4, 5			#property
+		lh		$t5, 0x0($t5)		#$t5 P
+		
+		addi	$t1, $t1, 1			#initial cluster
+		addi	$t6, $t4, 13		#$t6 I
+		lh		$t6, 0x0($t6)
+		
+		andi	$t5, $t5, 0xFF
+		li		$s0, 0x20			# if( P&0xFF != | I == 0 ) continue
+		bne		$t5, $s0, o_dir
+		beq		$t6, $zero, o_dir	
+		move	$a0, $s1
+		move	$a1, $t4		
+		jal		comp_str			#check whether the file exists
+		bne		$v0, $zero, open_exit		
+		
+		j		o_dir		
+		
 open_exit:
+		move	$a0, $v0
+		move	$a1, $zero
+		move	$a2, $zero
+		li		$v0, 4
+		syscall
+		
+		pop		$v0
+		pop		$s1
+		pop		$s0
+		pop		$t6
+		pop		$t5
+		pop		$t4
+		pop		$t3
+		pop		$t2
+		pop		$t1
+		pop		$t0
 		pop		$ra
+		pop		$a2
+		pop		$a1
 		pop		$a0
 		
 		jr		$ra
@@ -397,7 +464,41 @@ open_exit:
 F_OPEN:			.2byte	0x0
 F_NAME:			.asciiz "12345678.123"
 F_OFFSET:		.2byte	0x0
+F_INCLT:		.2byte	0x0
 SYS_SEC_BUF:	.2byte	0x0
+
+comp_str:
+#	$a0, pointer to first string waiting to be compared
+#	$a1, pointer to second string waiting to be compared
+#	$v0, return value that indicate whether two string are same or not
+#		@match: 1		@not match: 0
+		push	$ra
+		push	$a0
+		push	$a1
+		push	$t0
+		push	$t1
+		
+		move	$v0, $zero
+cmp_loop:
+		lw		$t0, 0x0($a0)
+		lw		$t1, 0x0($a1)
+		
+		bne		$t0, $t1, cmp_over		#check whether two byte is equal or name
+		beq		$t0, $zero, cmp_finish	#finish when attain zero
+		beq		$t1, $zero, cmp_finish
+		
+		j		cmp_loop
+		
+cmp_finish:
+		li		$v0, 1
+cmp_over:		
+		pop		$t1
+		pop		$t0
+		pop		$a1
+		pop		$a0
+		pop		$ra
+		
+		jr		$ra
 
 fseek:	push	$ra
 		pop		$ra
