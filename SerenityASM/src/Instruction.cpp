@@ -505,7 +505,8 @@ int Instruction::actualLinage()   // 伪指令实际行数
         int linage = 0;
         for (vector<AssemblyCode>::iterator itr = operand.begin(); itr != operand.end(); itr++) {
             AssemblyCode str = *itr;
-            linage += (str.size() + 1);
+            int len = str.length();
+            linage += (len / 2 + 1);
         }
         return linage;
     }
