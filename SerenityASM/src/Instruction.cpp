@@ -483,7 +483,7 @@ void Instruction::printErrorInfo(ErrorInfo errorInfo)
     }
     if (fout.is_open())
         fout.close();
-    exit(0);
+    exit(-1);
 }
 
 

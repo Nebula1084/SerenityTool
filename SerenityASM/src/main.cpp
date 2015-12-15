@@ -31,7 +31,7 @@ int main(int argc, const char * argv[])
     //cin >> fileName;
     if (!assembler.openFile(fileName)) {
         cout << "Can't open" << endl;
-        return 0;
+        return -1;
     }
     else cout << "Open file successfully" << endl;
     
