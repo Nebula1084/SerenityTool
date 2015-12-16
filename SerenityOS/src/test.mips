@@ -1,13 +1,76 @@
-.ORIGIN 0x0
-		addi	$sp, $zero, 0x2FFE #initial the stack pointer
-		addi	$a0, $zero, 12
-		addi	$a1, $zero, 5
-		addi	$a2, $zero, 5
-		addi 	$v0, $zero, 4
-		syscall
-exit:	j 		exit
-		
-exit:	beq		$zero, $zero, exit
+.ORIGIN         0x0
+                addi    $sp, $zero, 0x2EFE
+                li      $gp, 0
 
-str:	.asciiz "example"
-str2:	.2byte "example",2,51
+
+                li      $s0, 0x50FC
+                li      $t0, 0x000000FF
+                sw      $t0, 0($s0)
+                addi    $s0, $s0, 2
+                addi    $t0, $zero, 1
+                sw      $t0, 0($s0)
+
+                li      $s0, 0x50FF
+WAIT0:          lh      $t0, 0($s0)
+                beq     $t0, $zero, WAIT0       #VHD initialize
+
+                #read
+                li      $s0, 0x50FC
+                li      $t0, 0x00000000
+                sw      $t0, 0($s0)
+
+                li      $s0, 0x50FE
+                li      $t0, 0x1
+                sw      $t0, 0($s0)
+
+                li      $s0, 0x50FF
+WAIT2:          lh      $t0, 0($s0)
+                beq     $t0, $zero, WAIT2
+
+                #write
+                li      $s0, 0x50FC
+                li      $t0, 0x00000001
+                sw      $t0, 0($s0)
+
+                li      $s0, 0x50FE
+                li      $t0, 0x2
+                sw      $t0, 0($s0)
+
+                li      $s0, 0x50FF
+WAIT1:          lh      $t0, 0($s0)
+                beq     $t0, $zero, WAIT1
+
+                li      $s0, 0x5100
+                lw      $a0, 0($s0)
+                li      $a1, 0
+                li      $a2, 0
+                li      $v0, 4
+                syscall
+
+                li      $s0, 0x5101
+                lw      $a0, 0($s0)
+                li      $a1, 1
+                li      $a2, 0
+                li      $v0, 4
+                syscall
+
+
+LOOP:
+                li      $v0, 4
+                add     $a0, $at, $zero
+                li      $a1, 2
+                li      $a2, 0
+                syscall
+
+                li      $v0, 3
+                syscall
+                srl     $t0, $a0, 16
+                bne     $t0, $zero, NOT_DISPLAY
+
+                li      $v0, 2
+                li      $a1, 3
+                li      $a2, 0
+                syscall
+
+NOT_DISPLAY:
+                beq     $zero, $zero, LOOP
