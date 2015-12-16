@@ -4,7 +4,8 @@
 		jal 	init_disk
 
 		jal		dir
-		#jal		fopen
+		la		$a0, open_name
+		jal		fopen
 		
 		li		$v0, 4
 		li		$a0, 0x61
@@ -13,10 +14,8 @@
 		syscall
 		
 exit:	beq $zero, $zero, exit
-		.2byte	exit
-#open_name:
-#		.asciiz "AB      TXT"
-		
+		.2byte	exit	
+
 init_disk:		
 		push	$s0
 		push	$a0
@@ -29,8 +28,8 @@ init_disk:
 		push	$t1
 		push	$t2
 		push	$t3
-		push	$t4				
-		
+		push	$t4
+
 		#load 0 sector
 		move	$a0, $zero
 		jal		load_sector
@@ -145,6 +144,7 @@ init_disk:
 		
 #load sector
 load_sector:
+#$a0, number of specifed sector that need to be loaded
 		push	$a0
 		push	$s0
 		
@@ -339,15 +339,15 @@ f_ext:	li		$s0, 0x2E
 		sh		$s2, 0x0($t1)
 		addi	$t1, $t1, 1	
 		addi	$t2, $t2, 1
-		
+
 		lh		$t0, 0x0($t2)
 		srl		$s1, $t0, 8			#high 8 bit
 		beq		$s1, $s3, f_p		#if ($s1==' ') break;		
 		sh		$s1, 0x0($t1)
 		addi	$t1, $t1, 1
 		sh		$zero, 0x0($t1)
-		
-		
+
+
 f_p:	la		$a0, ln
 		li		$a2, 40
 		mul		$a1, $a2, $s4
@@ -370,9 +370,9 @@ f_p:	la		$a0, ln
 		
 		jr		$ra
 
-ln:		.asciiz	"namenamen"
+ln:		.asciiz	"12345678.123"
 
-lt:		.asciiz	"namenamen"
+lt:		.asciiz	"12345678.123"
 
 #-------------------fopen------------------
 fopen:
@@ -393,8 +393,8 @@ fopen:
 		push	$t6
 		push	$s0
 		push	$s1
-		push	$v0
-				
+		push	$v0		
+		
 		move	$s1, $a0				#file name
 		
 		la		$t0, F_OPEN
@@ -403,8 +403,8 @@ fopen:
 		move	$v0, $zero
 		j		open_exit
 		
-open_file:
-		li		$v0, 1
+open_file:		
+		li		$v0, 1		
 		
 		li		$t0, 0x3E00
 		move	$t1, $zero
@@ -413,12 +413,12 @@ o_dir:	mul		$t3, $t1, $t2		#while(dir[0]!=0)
 		add		$t4, $t3, $t0		#$t4 head of each line
 		
 		lw		$t5, 0x0($t4)
-		beq		$t5, $zero, s_fin
+		beq		$t5, $zero, file_not_exist
 		move	$a0, $t5
 		move	$a1, $t1			#$a1 line number
 		li		$a2, 0
 		li		$v0, 4
-				
+		
 		addi	$t5, $t4, 5			#property
 		lh		$t5, 0x0($t5)		#$t5 P
 		
@@ -429,14 +429,45 @@ o_dir:	mul		$t3, $t1, $t2		#while(dir[0]!=0)
 		andi	$t5, $t5, 0xFF
 		li		$s0, 0x20			# if( P&0xFF != | I == 0 ) continue
 		bne		$t5, $s0, o_dir
-		beq		$t6, $zero, o_dir	
-		move	$a0, $s1
-		move	$a1, $t4		
+		beq		$t6, $zero, o_dir
+		
+		move	$a0, $t4
+		la		$a1, tmp_name
+		jal		split_str
+		
+		move	$a0, $s1				
 		jal		comp_str			#check whether the file exists
-		bne		$v0, $zero, open_exit		
+		beq		$v0, $zero, o_dir
+		beq		$zero, $zero, file_exist
+		j		o_dir
+#------------not exists--------------
+file_not_exist:
+		li		$a0, 11
+		li		$a1, 10
+		li		$a2, 0
+		li		$v0, 4
+		syscall
+		beq		$zero, $zero, open_exit
+#-----------exists----------
+file_exist:
+		li		$a0, 10
+		li		$a1, 10
+		li		$a2, 0
+		li		$v0, 4
+		syscall
 		
-		j		o_dir		
+		la		$a0, F_OPEN
+		li		$a1, 1
+		sw		$a1, 0x0($a0)
 		
+		la		$a0, F_OFFSET
+		sw		$zero, 0x0($a0)
+		
+		la		$a0, F_INCLT
+		sw		$t6, 0x0($a0)
+		move	$a0, $t6
+		jal		load_sector
+
 open_exit:
 		move	$a0, $v0
 		move	$a1, $zero
@@ -462,10 +493,65 @@ open_exit:
 		jr		$ra
 		
 F_OPEN:			.2byte	0x0
-F_NAME:			.asciiz "12345678.123"
+F_NAME:			.asciiz "12345678123"
 F_OFFSET:		.2byte	0x0
 F_INCLT:		.2byte	0x0
 SYS_SEC_BUF:	.2byte	0x0
+
+split_str:
+#	$a0, source which is a file name in 8.3 format
+#	$a1, dest
+
+		push	$ra
+		push	$t1
+		push	$t2
+		push	$t3
+		push	$t0
+		push	$s0
+		push	$s1
+		push	$s2
+		
+		move	$t1, $a1				#dest
+		move	$t2, $a0				#source
+		li		$t3, 4
+split_nam:		
+		lh		$t0, 0x0($t2)
+		srl		$s1, $t0, 8			#high 8 bit				
+		sh		$s1, 0x0($t1)
+		addi	$t1, $t1, 1
+		andi	$s2, $t0, 0x0FF		#low 8 bit		
+		sh		$s2, 0x0($t1)
+		addi	$t1, $t1, 1	
+		addi	$t2, $t2, 1
+		addi	$t3, $t3, -1
+		bne		$t3, $zero, split_nam			 				
+
+split_ext:									
+		lh		$t0, 0x0($t2)
+		srl		$s1, $t0, 8			#high 8 bit		
+		sh		$s1, 0x0($t1)
+		addi	$t1, $t1, 1
+		andi	$s2, $t0, 0x0FF		#low 8 bit				
+		sh		$s2, 0x0($t1)
+		addi	$t1, $t1, 1	
+		addi	$t2, $t2, 1
+
+		lh		$t0, 0x0($t2)
+		srl		$s1, $t0, 8			#high 8 bit				
+		sh		$s1, 0x0($t1)
+		addi	$t1, $t1, 1
+		sh		$zero, 0x0($t1)
+		
+		pop		$s2
+		pop		$s1
+		pop		$s0
+		pop		$t0
+		pop		$t3
+		pop		$t2
+		pop		$t1
+		pop		$ra
+		
+		jr		$ra
 
 comp_str:
 #	$a0, pointer to first string waiting to be compared
@@ -479,13 +565,15 @@ comp_str:
 		push	$t1
 		
 		move	$v0, $zero
-cmp_loop:
-		lw		$t0, 0x0($a0)
-		lw		$t1, 0x0($a1)
+cmp_loop:	
+		lh		$t0, 0x0($a0)
+		lh		$t1, 0x0($a1)
 		
 		bne		$t0, $t1, cmp_over		#check whether two byte is equal or name
 		beq		$t0, $zero, cmp_finish	#finish when attain zero
 		beq		$t1, $zero, cmp_finish
+		addi	$a0, $a0, 1
+		addi	$a1, $a1, 1
 		
 		j		cmp_loop
 		
@@ -503,7 +591,16 @@ cmp_over:
 fseek:	push	$ra
 		pop		$ra
 
-fread:	push	$ra
+fread_32:
+		push	$ra
+		push	$t0
+		push	$t1
+		
+		la		$t0, F_OFFSET
+		move	$t1, $t0
+		
+		pop		$t1
+		pop		$t0
 		pop		$ra
 		
 fwrite:	push	$ra
@@ -511,3 +608,8 @@ fwrite:	push	$ra
 
 fclose:	push	$ra
 		pop		$ra
+		
+tmp_name:
+		.asciiz "12345678123"
+open_name:
+		.asciiz "ABD     TXT"
