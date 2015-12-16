@@ -10,11 +10,11 @@
         push    $s3
         push    $t0
 
-        li      $s0, 0x4706     # $s0 = BUFFER
-        li      $s2, 0x4704     # $s2 = OUT
+        li      $s0, 0x4806     # $s0 = BUFFER
+        li      $s2, 0x4804     # $s2 = OUT
         lw      $s3, 0($s2)     # $s3 = mem[OUT]
 LOOP:   
-        lw      $s1, 0x4702($zero)      # $s1 = mem[IN]
+        lw      $s1, 0x4802($zero)      # $s1 = mem[IN]
         beq     $s1, $s3, LOOP
 
         add     $t0, $s3, $s0

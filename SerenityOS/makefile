@@ -10,7 +10,7 @@ BankA.coe BankB.coe:SerenityOS.bit
 
 SerenityOS.bit: bin\IntEntry.bit bin\IVT.bit bin\TVT.bit \
 	bin\print.bit bin\printstr.bit  bin\putchar.bit\
-	bin\editor.bit bin\getchar.bit bin\KBInt.bit
+	bin\editor.bit bin\getchar.bit bin\KBInt.bit bin\printint.bit
 	$(SLINK) -o SerenityOS.bit \
 		bin\IntEntry.bit \
 		bin\IVT.bit \
@@ -18,10 +18,10 @@ SerenityOS.bit: bin\IntEntry.bit bin\IVT.bit bin\TVT.bit \
 		bin\print.bit \
 		bin\printstr.bit \
 		bin\putchar.bit \
-		bin\HardKBInt.bit \
 		bin\editor.bit \
 		bin\getchar.bit \
-		bin\KBInt.bit
+		bin\KBInt.bit \
+		bin\printint.bit
 
 FileSys.bit: bin\IntEntry.bit \
 	bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit \

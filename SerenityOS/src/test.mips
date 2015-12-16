@@ -1,6 +1,6 @@
 .ORIGIN         0x0
                 addi    $sp, $zero, 0x2EFE
-                li      $gp, 0
+                addi    $gp, $zero, 0
 
 
                 li      $s0, 0x50FC
