@@ -5,10 +5,13 @@
 
 		jal		dir
 		la		$a0, open_name
-		jal		fopen
+		jal		fopen		
+		beq		$v0, $zero, l1
+		jal		fread_32
+		jal		fread_32		
 		
-		li		$v0, 4
-		li		$a0, 0x61
+l1:		move	$a0, $v0
+		li		$v0, 4		
 		li		$a1, 0
 		li		$a2, 0
 		syscall
@@ -123,6 +126,9 @@ init_disk:
 		add		$t0, $t0, $t3
 		move	$a0, $t0			#$a0=psec+prs+nof*pspf
 		
+		la		$s0, DIR_sector
+		sw		$a0, 0x0($s0)
+		
 		#load DIR sector
 		jal		load_sector
 		li		$a0, 0x3E00
@@ -160,8 +166,24 @@ SUS_L:	lh		$s0, 0x50FF($zero)
 		pop		$a0
 		pop		$s0
 		jr		$ra
+		
+dump_sector:
+#$a0, number of specifed sector that need to be loaded
+		push	$a0
+		push	$s0
+		
+		sw		$a0, 0x50FC($zero)
+		addi	$s0, $zero, 1
+		sh		$s0, 0x50FE($zero)
+SUS_D:	lh		$s0, 0x50FF($zero)
+		beq		$s0, $zero, SUS_L				
+		
+		pop		$s0
+		pop		$a0
+		jr		$ra
 
 #reverse the little-endian data
+#$a0 -> $v0
 rever:	push	$a0
 		push	$t0
 		push	$t1
@@ -191,9 +213,12 @@ rever:	push	$a0
 		pop		$a0
 		jr		$ra
 		
+DIR_sector:
+		.2byte	0x0
 psec:	.2byte	0x0
 plen:	.2byte	0x0
 pbps:	.2byte	0x0
+#sector per cluster
 pspc:	.2byte	0x0
 prs:	.2byte	0x0
 nof:	.2byte	0x0
@@ -463,9 +488,22 @@ file_exist:
 		la		$a0, F_OFFSET
 		sw		$zero, 0x0($a0)
 		
+		sll		$t6, $t6, 16
+		move	$a0, $t6
+		li		$a1, 2
+		move	$a2, $zero
+		li		$v0, 4
+		syscall
+		
+		jal		rever
+		move	$t6, $v0
+		
 		la		$a0, F_INCLT
 		sw		$t6, 0x0($a0)
-		move	$a0, $t6
+		
+		jal		cal_ini_cluster
+		
+		move	$a0, $v0
 		jal		load_sector
 
 open_exit:
@@ -595,21 +633,89 @@ fread_32:
 		push	$ra
 		push	$t0
 		push	$t1
+		push	$t2
+		push	$t3
+		push	$t4
+		push	$s0
+		push	$s1
+		push	$s2		
 		
+		la		$t0, F_OPEN
+		lw		$t1, 0x0($t0)				#check whether file pointer has been initialized
+		bne		$t1, $zero, f_read			#if file hasn't been opened
+		li		$v0, 0xFFFFFFFF
+		j		fread_32_exit
+f_read:
 		la		$t0, F_OFFSET
+		move	$t4, $t0
+		lw		$t0, 0x0($t0)
 		move	$t1, $t0
+		move	$t3, $t0
+		srl		$t0, $t0, 9			# current sector
+		andi	$t1, $t1, 0x1FF		# sector offset
 		
+		jal		cal_ini_cluster
+		
+		add		$t0, $t0, $v0
+		
+		la		$t2, SYS_SEC_BUF
+		lw		$t2, 0x0($t2)
+#----whether current sector need to be swapped
+		beq		$t0, $t2, no_need_swap
+need_swap:
+		move	$a0, $t2
+		jal		dump_sector
+		move	$a0, $t0
+		jal		load_sector		
+no_need_swap:
+		lw		$v0, 0x5100($t1)
+		addi	$t3, $t3, 2
+		sw		$t3, 0x0($t4)
+fread_32_exit:		
+		pop		$s2
+		pop		$s1
+		pop		$s0
+		pop		$t4
+		pop		$t3
+		pop		$t2
 		pop		$t1
 		pop		$t0
 		pop		$ra
+		jr		$ra
+		
+cal_ini_cluster:
+#$v0: initial cluster for file
+		push	$ra
+		push	$s0
+		push	$s1
+		push	$s2
+		
+		la		$s0, DIR_sector
+		lw		$s0, 0x0($s0)		#$s0 = DIR +32
+		addi	$s0, $s0, 32
+		la		$s1, F_INCLT
+		lw		$s1, 0x0($s1)
+		addi	$s1, $s1, -2		#s1 = F_INCLT-2
+		la		$s2, pspc
+		lw		$s2, 0x0($s2)
+		mul		$s1, $s1, $s2
+		add		$v0, $s0, $s1		#DIR+32+(INCLT-2)*sector per cluster
+		
+		pop		$s2
+		pop		$s1
+		pop		$s0
+		pop		$ra
+		jr		$ra
 		
 fwrite:	push	$ra
 		pop		$ra
+		jr		$ra
 
 fclose:	push	$ra
 		pop		$ra
+		jr		$ra
 		
 tmp_name:
 		.asciiz "12345678123"
 open_name:
-		.asciiz "ABD     TXT"
+		.asciiz "ABC     TXT"
