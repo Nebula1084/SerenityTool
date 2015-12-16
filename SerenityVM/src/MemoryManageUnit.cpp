@@ -32,7 +32,7 @@ bool MemoryManageUnit::adrChk(int adr){
     if (0 <= adr && adr < size)
         return true;
     cout << "we couldn't access memory at " << hex << adr << "." << endl;
-        exit(-1);
+    throw -1;
 }
 
 void MemoryManageUnit::print(){

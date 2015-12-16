@@ -1,4 +1,4 @@
-.ORIGIN 0x0
+.ORIGIN 0x0		
 		addi	$sp, $zero, 0x2FFE #initial the stack pointer
 		move	$gp, $zero		
 		jal 	init_disk
@@ -8,7 +8,9 @@
 		jal		fopen		
 		beq		$v0, $zero, l1
 		jal		fread_32
-		jal		fread_32		
+		jal		fread_32
+		jal		fread_32
+		jal		fread_32
 		
 l1:		move	$a0, $v0
 		li		$v0, 4		
@@ -34,7 +36,8 @@ init_disk:
 		push	$t4
 
 		#load 0 sector
-		move	$a0, $zero
+		li		$a0, 0x0
+#		move	$a0, $zero
 		jal		load_sector
 		
 		li		$t0, 0x5100
@@ -44,6 +47,22 @@ init_disk:
 		la		$t1, psec
 		sw		$v0, 0x0($t1)
 		
+		push	$a0
+		push	$a1
+		push	$a2
+		push	$v0
+		
+		move	$a0, $v0
+		li		$a1, 1
+		move	$a2, $zero
+		li		$v0, 4
+		syscall
+		
+		pop		$v0
+		pop		$a2
+		pop		$a1
+		pop		$a0
+
 		lw		$a0, 0xE5($t0)			#length of partition 1 in sector
 		jal		rever
 		la		$t1, plen
@@ -74,6 +93,19 @@ init_disk:
 		andi	$a0, $a0, 0x0F
 		la		$t1, pspc
 		sw		$a0, 0x0($t1)		#pspc
+		
+		push	$a1
+		push	$a2
+		push		$v0
+		
+		li		$a1, 20
+		li		$a2, 0
+		li		$v0, 4
+		syscall
+		
+		pop		$a2
+		pop		$a1
+		pop		$v0
 		
 		#reserved sector(prs)
 		lw		$t1, 0x7($t0)
@@ -117,7 +149,8 @@ init_disk:
 		
 		#load FAT sector
 		add		$t0, $t1, $t2		#$a0=psec+prs FAT = psec+prs
-		move	$a0, $t0
+		move	$a0, $t0				
+		
 		jal		load_sector
 		li		$a0, 0x3D00
 		jal 	mosec				#move fat sector to 0x3D00
@@ -468,7 +501,7 @@ o_dir:	mul		$t3, $t1, $t2		#while(dir[0]!=0)
 #------------not exists--------------
 file_not_exist:
 		li		$a0, 11
-		li		$a1, 10
+		li		$a1, 11
 		li		$a2, 0
 		li		$v0, 4
 		syscall
@@ -476,7 +509,7 @@ file_not_exist:
 #-----------exists----------
 file_exist:
 		li		$a0, 10
-		li		$a1, 10
+		li		$a1, 11
 		li		$a2, 0
 		li		$v0, 4
 		syscall
@@ -507,8 +540,8 @@ file_exist:
 		jal		load_sector
 
 open_exit:
-		move	$a0, $v0
-		move	$a1, $zero
+		move	$a0, $v0			
+		li		$a1, 3
 		move	$a2, $zero
 		li		$v0, 4
 		syscall
@@ -658,6 +691,8 @@ f_read:
 		
 		add		$t0, $t0, $v0
 		
+		
+		
 		la		$t2, SYS_SEC_BUF
 		lw		$t2, 0x0($t2)
 #----whether current sector need to be swapped
@@ -707,6 +742,16 @@ cal_ini_cluster:
 		pop		$ra
 		jr		$ra
 		
+next_cluster:
+#$a0: current cluster
+#$
+		push	$ra
+		
+		
+		
+		pop		$ra
+		jr		$ra
+		
 fwrite:	push	$ra
 		pop		$ra
 		jr		$ra
@@ -718,4 +763,4 @@ fclose:	push	$ra
 tmp_name:
 		.asciiz "12345678123"
 open_name:
-		.asciiz "ABC     TXT"
+		.asciiz "A       TXT"

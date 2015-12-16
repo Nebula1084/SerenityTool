@@ -1,0 +1,31 @@
+SASM	= SerenityASM.exe
+SLINK	= SerenityLINK.exe
+MV = copy
+RM = del
+
+SerenityOS.bit: bin\IntEntry.bit bin\IVT.bit bin\TVT.bit \
+	bin\print.bit bin\printstr.bit bin\printint.bit bin\putchar.bit  bin\getchar.bit \
+	bin\editor.bit bin\clear.bit
+
+	$(SLINK) -o SerenityOS.bit \
+		bin\IntEntry.bit \
+		bin\IVT.bit \
+		bin\TVT.bit \
+		bin\print.bit \
+		bin\printstr.bit \
+		bin\printint.bit \
+		bin\putchar.bit \
+		bin\getchar.bit \
+		bin\editor.bit \
+		bin\clear.bit
+
+bin\\%.bit: src\%.mips
+	$(SASM)	$<
+	$(MV)	src\*.bit bin\*.bit
+	$(RM)	src\*.bit
+	
+.PHONY: clean
+clean:
+	$(RM) bin/*.bit *.bit
+
+

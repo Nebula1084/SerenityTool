@@ -1,4 +1,4 @@
-.ORIGIN 0x4700
+.ORIGIN 0x4800
 # $s0   BUFFER base
 # $s1   mem[IN]
 # $s2   mem[OUT]
