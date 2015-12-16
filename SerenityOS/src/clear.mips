@@ -1,0 +1,28 @@
+.ORIGIN		0x4300
+			push	$v0
+			push	$a0
+			push	$a1
+			push	$a2
+			push	$t1
+			push	$t2
+			
+			li		$a0, 0x0
+			li		$v0, 2
+			li		$t1, 25		# height of the screen
+			li		$t2, 40		# width of the screen
+			
+LOOP:		syscall
+			addi	$a2, $a2, 1
+			bne		$a2, $t2, LOOP
+			addi	$a1, $a1, 1
+			beq		$a1, $t1, exit
+			move	$a2, $zero			
+			j		LOOP
+			
+exit:		pop		$t2
+			pop		$t1
+			pop		$a2
+			pop		$a1
+			pop		$a0
+			pop		$v0
+			jr		$ra

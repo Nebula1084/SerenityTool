@@ -5,3 +5,4 @@
 		.2byte 0x4180 	# getchar
 		.2byte 0x4200	# printint
 		.2byte 0x4280	# init_disk
+		.2byte 0x4300	# clear

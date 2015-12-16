@@ -1,4 +1,12 @@
 #Serenity Editor
+
+###Version2.0.0
+1. 采用新的编码方式
+2. 解决大量bug
+3. 目前发现的bug只剩会车和光标重叠时的bug
+4. 基本放弃实现上下
+5. 其余基本完善
+
 ###Version1.2.1
 #####realized:
 ~~~
