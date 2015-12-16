@@ -407,7 +407,7 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
             printErrorInfo(No_such_register);
         if (labelTable.find(getOperand(1)) == labelTable.end())
             printErrorInfo(No_such_label);
-        int imme = labelTable[getOperand(1)] * 2 + base / 2;
+        int imme = labelTable[getOperand(1)] * 2 + base;
         if (imme == (imme & 0x0000ffff))  { // imme可用16bit表示
             newLine = new ImmInstruction; // addi $r,$zero,imme
             if (hasLabel())
@@ -461,6 +461,7 @@ void PseudoInstruction::translate(vector<Instruction *> &instructionSet, map<Lab
         }
         else imme = labelTable[addr];
         imme += base / 2;
+        imme *= 2;
         
         newLine = new ImmInstruction; // lui $r, HIGH
         if (hasLabel())

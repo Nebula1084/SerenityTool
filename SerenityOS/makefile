@@ -8,10 +8,11 @@ ALL:FileSys.bit BankA.coe BankB.coe
 BankA.coe BankB.coe:SerenityOS.bit
 	python generateCoe.py SerenityOS.bit
 
-SerenityOS.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit  bin\putchar.bit bin\KBInt.bit bin\editor.bit bin\getchar.bit
+SerenityOS.bit: bin\IntEntry.bit bin\IVT.bit bin\TVT.bit \
+	bin\print.bit bin\printstr.bit  bin\putchar.bit\
+	bin\editor.bit bin\getchar.bit bin\KBInt.bit
 	$(SLINK) -o SerenityOS.bit \
 		bin\IntEntry.bit \
-		bin\SysEntry.bit \
 		bin\IVT.bit \
 		bin\TVT.bit \
 		bin\print.bit \
@@ -20,25 +21,23 @@ SerenityOS.bit: bin\IntEntry.bit bin\SysEntry.bit bin\IVT.bit bin\TVT.bit bin\pr
 		bin\HardKBInt.bit \
 		bin\editor.bit \
 		bin\getchar.bit \
-		bin\Screen.bit
+		bin\KBInt.bit
 
-FileSys.bit: bin\IntEntry.bit bin\SysEntry.bit \
+FileSys.bit: bin\IntEntry.bit \
 	bin\IVT.bit bin\TVT.bit bin\print.bit bin\printstr.bit \
-	bin\putchar.bit bin\KBInt.bit bin\filetest.bit bin\getchar.bit \
-	bin\printint.bit bin\fopen.bit
+	bin\putchar.bit bin\boot.bit bin\getchar.bit \
+	bin\printint.bit bin\KBInt.bit
 	$(SLINK) -o FileSys.bit \
 		bin\IntEntry.bit \
-		bin\SysEntry.bit \
 		bin\IVT.bit \
 		bin\TVT.bit \
 		bin\print.bit \
 		bin\printstr.bit \
 		bin\putchar.bit \
-		bin\KBInt.bit \
 		bin\printint.bit \
-		bin\filetest.bit \
+		bin\boot.bit \
 		bin\getchar.bit \
-		bin\fopen.bit
+		bin\KBInt.bit
 
 bin\\%.bit: src\%.mips
 	$(SASM)	$<
@@ -52,4 +51,4 @@ bin\Screen.bit:
 
 .PHONY: clean
 clean:
-	$(RM) bin\*.bit *.bit
+	$(RM) bin\*.bit *.bit *.coe

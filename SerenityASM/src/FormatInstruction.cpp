@@ -57,6 +57,7 @@ void FormatInstruction::assemble(AssembleInfo &assembleInfo, ofstream &fout, map
                 if (labelTable.find(label) == labelTable.end())
                     printErrorInfo(No_such_label);
                 int addr = labelTable[label] + base / 2;
+                addr *= 2;
                 print(addr, fout);
             }
         }

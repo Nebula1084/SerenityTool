@@ -2,6 +2,7 @@
 #include "iostream"
 #include "queue"
 #include "cstdlib"
+#include "iomanip"
 using namespace std;
 int getOrigin(ifstream& fin){
     if (fin.is_open()){
@@ -47,6 +48,8 @@ void append(ofstream& fout, string fileName){
         cout << "Cann't open file \"" << fileName << "\"" << endl;
         exit(1);
     }
+    int origin = getOrigin(fileName);
+    cout << fileName << " " << hex << origin << endl;
     static int foutOrigin;
     if (fout.tellp() == 0){
         char tmp;
@@ -58,11 +61,10 @@ void append(ofstream& fout, string fileName){
         foutOrigin = getOrigin(fileName);
     }
     else{
-        int origin = getOrigin(fileName);
         // cout << "fout.tellp()=" << fout.tellp() << endl;
         // cout << fileName << ":" << origin << endl;
         if (foutOrigin*2 + fout.tellp() > origin*2){
-            cout << "Overlap occurs!!!" << endl;
+            cout << "Overlap occurs while concatenating " << fileName << "!!" << endl;
             exit(1);
         }
         else{

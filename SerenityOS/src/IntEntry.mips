@@ -3,6 +3,9 @@
 		push    $t0
 		push    $t1
 		push    $t2
+        push    $gp
+
+        add     $gp, $zero, $zero
 
 		mfc0    $t0, $c0
 		push    $t0             #push EPC
@@ -11,7 +14,7 @@
 		
 		
 		add     $t1 , $t1, $t1
-		addi    $t1, $t1, 0x4B00        #interrupt vector address
+		addi    $t1, $t1, 0x4D00        #interrupt vector address
 		lw		$t1, 0($t1)	
 		jalr	$t1, $ra				#enter interrupt service
 
@@ -23,6 +26,7 @@
         pop  	$t0    #pop EPC
         mtc0 	$t0, $c0
 
+        pop     $gp
         pop  	$t2
         pop  	$t1
         pop  	$t0

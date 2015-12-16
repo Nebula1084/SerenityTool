@@ -5,7 +5,7 @@
 //  Created by scn3 on 15/10/17.
 //  Copyright © 2015年 scn3. All rights reserved.
 //
-
+#include "stdlib.h"
 #include "Instruction.hpp"
 #include "AssembleInfo.hpp"
 #include "global.hpp"
@@ -483,7 +483,7 @@ void Instruction::printErrorInfo(ErrorInfo errorInfo)
     }
     if (fout.is_open())
         fout.close();
-    exit(0);
+    exit(-1);
 }
 
 
@@ -491,7 +491,7 @@ int Instruction::actualLinage()   // 伪指令实际行数
 {
     if (opName == ".origin")
         return 0;
-    if (opName == "push" || opName == "pop" || opName == "blt" || opName == "bgt" || opName == "ble" || opName == "bge")
+    if (opName == "blt" || opName == "bgt" || opName == "ble" || opName == "bge")
         return 2;
     if (opName == "abs" || opName == "swap" || opName == "sne" || opName == "seq")
         return 3;
@@ -505,7 +505,8 @@ int Instruction::actualLinage()   // 伪指令实际行数
         int linage = 0;
         for (vector<AssemblyCode>::iterator itr = operand.begin(); itr != operand.end(); itr++) {
             AssemblyCode str = *itr;
-            linage += (str.size() + 1);
+            int len = str.length();
+            linage += (len / 2 + 1);
         }
         return linage;
     }
@@ -519,6 +520,8 @@ int Instruction::actualLinage()   // 伪指令实际行数
         }
         return linage;
     }
+    if (opName == "push" || opName == "pop")
+        return numOfOperand() + 1;
     if (opName == ".space") {
         int linage = immatoi(0);
         if (linage == errorIns)
@@ -646,9 +649,11 @@ int Instruction::immatoi(string str, int len, bool issigned)
         radix = 2;
         start = 1;
     }
-    else if (imma.at(0) == '0' && imma.at(1) == 'x') {  // 0xn
-        radix = 16;
-        start = 2;
+    else if (imma.at(0) == '0' && imma.size() > 1) {  // 0xn
+        if (imma.at(1) == 'x') {
+            radix = 16;
+            start = 2;
+        }
     }
     else if (imma.at(0) >= '0' && imma.at(0) <= '9') {  // n
         radix = 10;

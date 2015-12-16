@@ -9,6 +9,9 @@
 #define MMU_SIZE 0x5202
 #define INITSP 0x2FFE
 #define VMADR 0x3000
+#define FAT 0x3D00
+#define DIR 0x3E00
+#define FCONT 0x3F00
 #define SYSADR 0x4000
 #define TVTADR 0x4500
 #define INTADR 0x4600
@@ -24,6 +27,8 @@
 #define D_COMM_WRITE 1
 #define D_COMM_READ 2
 
+#include <iostream>
+
 using namespace std;
 class MipsCPU
 {
@@ -34,6 +39,9 @@ public:
 	void printReg();
 	void run();
 	void setDebug(bool d);
+	void printPC(){
+		cout << "PC::" << PC << endl;
+	}
 private:
 	FILE* disk;
 	int rgf[32];

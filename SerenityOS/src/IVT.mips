@@ -1,5 +1,29 @@
-.ORIGIN 0x4B00
-		.2byte		0x4600  #syscall
-		.2byte		0x4700  #KBInt
-		.2byte		0x4C00  #Timer
-		.2byte		0x4900
+
+.ORIGIN 0x4D00
+			.2byte		SysEntry  #syscall
+			.2byte		0x4800  #KBInt
+			.2byte		0x4C00  #Timer
+		
+#----------------Syscall Entry----------------------
+SysEntry:
+			push    $ra
+			push    $t0
+			push    $t1
+	
+			mfc0    $t0, $c2        #$t0 = State
+			lui     $t1, 0xFFFF
+			ori     $t1, $t1, 0xFFFD
+			and     $t0, $t0, $t1
+			ori     $t0, $t0, 1
+			mtc0    $t0, $c2        #State = State[31:2],2'b01 #enable interrupt
+	
+			add     $t0, $v0, $v0           
+			addi    $t0, $t0, 0x4C80        #caculate the vector address
+			lw      $t0, 0($t0)
+			jalr    $t0, $ra                #enter system trap
+
+END1:
+			pop     $t1
+			pop     $t0
+			pop     $ra
+			jr      $ra

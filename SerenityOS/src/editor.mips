@@ -1,29 +1,44 @@
 .ORIGIN         0x0
-                addi    $sp, $zero, 0x2EFE
+                li      $sp, 0x2FFE             # initialize $sp
+                
+                la      $a0, str
+                li      $v0, 1
+                li      $a1, 10
+                syscall
+                 
+                sw      $zero, 0x4FFE($zero)     
+                move    $s6, $zero              # pointer to the current character in memory
+                move    $s7, $zero              # the offset of the last character in memory
+                li      $t7, 40                 # width of screen
+                li      $t6, 25                 # height of screen
+                li      $t5, 0x1000             # capity of the memory allocated to the editor
+                li      $s5, 0x5F               # underline
+                li      $s4, 0xFFFF0000         # mask 
+                                
+                move    $a0, $s5
+                li      $a1, 1
+                move    $a2, $zero
+                jal     PRINTCHAR
+                
+MAINLOOP:       jal     GETCHAR
+                sw      $a0, 0x3000($zero)
+                #jal     PRINTCHAR
+                j       MAINLOOP
 
-                li      $s0, 0x50FC
-                li      $t0, 0x1234ABCD
-                sw      $t0, 0($s0)
+                                      
+GETCHAR:        push    $v0
+                push    $a3
+                li      $v0, 3
+                syscall
+                move    $a0, $a3
+                pop     $a3
+                pop     $v0
+                jr      $ra
 
-                li      $s0, 0x50FE
-                li      $t0, 0x2
-                sw      $t0, 0($s0)
-
-WAIT1:          li      $s0, 0x50FF
-                lh      $t0, 0($s0)
-                beq     $t0, $zero, WAIT1
-
-                li      $s0, 0x50FC
-                li      $t0, 0xABCD1234
-                sw      $t0, 0($s0)
-
-                li      $s0, 0x50FE
-                li      $t0, 0x1
-                sw      $t0, 0($s0)
-
-WAIT2:          li      $s0, 0x50FF
-                lh      $t0, 0($s0)
-                beq     $t0, $zero, WAIT2
-
-this:
-                beq     $zero, $zero, this
+PRINTCHAR:      push    $v0
+                li      $v0, 2
+                syscall
+                pop     $v0
+                jr      $ra
+                 
+str:    .asciiz "Serenity Editor v1.3"       

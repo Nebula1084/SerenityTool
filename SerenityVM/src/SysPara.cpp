@@ -4,7 +4,7 @@
 
 const std::string SysPara::rgNm[32] = {
 	"$zero",
-	"",
+	"$at",
 	"$v0",
 	"$v1",
 	"$a0",
@@ -29,8 +29,8 @@ const std::string SysPara::rgNm[32] = {
 	"$s7",
 	"$t8",
 	"$t9",
-	"",
-	"",
+	"$k1",
+	"$k2",
  	"$gp",
 	"$sp",
 	"$fp",

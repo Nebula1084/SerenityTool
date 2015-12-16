@@ -42,9 +42,9 @@ void MipsCPU::run(){
 	int keycode;
 	char c = 'r';
 	char numstr[20];
-	int comm;
-	int sector;
-	int p=0;	
+	int comm, gPC, gFlag=0;
+	int sector;	
+	int p=0;
 	while(c!='q'){
 		if ((comm=MMU.getData(DCOMM))!=D_COMM_NONE){
 			MMU.sh(DSIGN, 0);
@@ -76,6 +76,9 @@ void MipsCPU::run(){
 		}
 		if (kbhit()){
 			keycode = getch();
+			if (debug && keycode== 'b'){
+				gFlag=0;
+			}
 			if (keycode==224){
 				int ff = keycode;
 				keycode = getch();
@@ -94,7 +97,9 @@ void MipsCPU::run(){
 			PC = INTENTRY;			
 		}		
 		IR=MMU.lw(PC);
-		// cout << hex << PC<<"========" << IR << endl;
+		if (PC==gPC) {
+			gFlag = 0;
+		}		
 		PC+=2;						//16-bit/byte
 	//R:	op:6,rs:5,rt:5,rd:5,sft:5,fun:6
 	//I:	op:6,$rs:5,$rt:5,dat:16
@@ -341,15 +346,18 @@ void MipsCPU::run(){
 		}
 		MMU.print();
 		c = 'r';
-		if (debug){
+		if (debug && !gFlag){
 			c = getch();
 			if (c == 'm'){
 				int showAdr;			
-				scanf("%x", &showAdr);				
+				scanf("%x", &showAdr);		
 				while (getch() != 'q' && showAdr < MMU_SIZE){
 					cout << "0x" << hex << setw(8) << showAdr << ":" << setw(4) << hex <<MMU.getData(showAdr) << endl;
 					showAdr++;
 				}
+			} else if (c == 'g'){
+				scanf("%x", &gPC);
+				gFlag=1;
 			} else {
 				printReg();	
 			}			
