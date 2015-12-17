@@ -1,4 +1,4 @@
-.ORIGIN 0x0
+.ORIGIN 0x0		
 		addi	$sp, $zero, 0x2FFE #initial the stack pointer
 		move	$gp, $zero		
 		jal 	init_disk
@@ -36,7 +36,8 @@ init_disk:
 		push	$t4
 
 		#load 0 sector
-		move	$a0, $zero
+		li		$a0, 0x0
+#		move	$a0, $zero
 		jal		load_sector
 		
 		li		$t0, 0x5100
@@ -46,6 +47,22 @@ init_disk:
 		la		$t1, psec
 		sw		$v0, 0x0($t1)
 		
+		push	$a0
+		push	$a1
+		push	$a2
+		push	$v0
+		
+		move	$a0, $v0
+		li		$a1, 1
+		move	$a2, $zero
+		li		$v0, 4
+		syscall
+		
+		pop		$v0
+		pop		$a2
+		pop		$a1
+		pop		$a0
+
 		lw		$a0, 0xE5($t0)			#length of partition 1 in sector
 		jal		rever
 		la		$t1, plen
@@ -523,7 +540,7 @@ file_exist:
 		jal		load_sector
 
 open_exit:
-		move	$a0, $v0
+		move	$a0, $v0			
 		li		$a1, 3
 		move	$a2, $zero
 		li		$v0, 4

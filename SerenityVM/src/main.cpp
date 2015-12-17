@@ -26,8 +26,12 @@ int main(int argc, char const *argv[])
 		cin >> fileName;
 		fin.open(fileName);
 	}
-	mipsCPU.boot(fin);	
-	mipsCPU.run();	
+	mipsCPU.boot(fin);
+	try{
+		mipsCPU.run();	
+	} catch(int){
+		mipsCPU.printPC();
+	}		
 	fin.close();
 	Log::logFile.close();
 	return 0;
