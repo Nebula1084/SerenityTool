@@ -1,38 +1,10 @@
 .ORIGIN     0x4180
+			push	$t0
 
-# $s0	BUFFER
-# $s1	mem[IN]
-# $s2	OUT
-# $s3	mem[OUT]
-                push    $s0
-                push    $s1
-                push    $s2
-                push    $s3
-                push    $t0
-        
-                li		$s0, 0x4706		# $s0 = BUFFER
-		li		$s2, 0x4704		# $s2 = OUT
-		lw		$s3, 0($s2)		# $s3 = mem[OUT]
-LOOP:	
-		lw		$s1, 0x4702($zero)		# $s1 = mem[IN]
-		beq		$s1, $s3, LOOP
-
-		add 	$t0, $s3, $s0
-		lw		$a0, 0($t0)		# $a0 = mem[OUT + BUFFER]
-
-		addi    $s3, $s3, 1         # $s3 = mem[OUT] + 1
-                sltiu   $t0, $s3, 16
-                beq     $t0, $zero, SUB     # if($s3 >= 16) goto SUB;
-                beq     $zero, $zero, NOT_SUB # else goto NOT_SUB;
-SUB:
-                li      $s3, 0              # $s3 = $s3 % 16
-NOT_SUB:
-		sw		$s3, 0($s2)
-
-                pop     $t0
-                pop     $s3
-                pop     $s2
-                pop     $s1
-                pop     $s0
-                jr      $ra
-                                
+LOOP:		lw		$t0, 0x4FFE($zero)
+			beq		$t0, $zero, LOOP
+            lw		$a0, 0x5000($zero)
+			sw		$zero, 0x4FFE($zero)                    
+			
+			pop		$t0
+			jr		$ra
