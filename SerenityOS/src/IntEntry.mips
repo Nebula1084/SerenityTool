@@ -27,6 +27,7 @@
         mtc0 	$t0, $c0
 
         pop     $gp
+
         pop  	$t2
         pop  	$t1
         pop  	$t0

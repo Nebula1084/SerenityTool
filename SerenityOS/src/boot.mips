@@ -5,23 +5,53 @@
 
 		jal		dir
 		la		$a0, open_name
+		jal		exec		
+		
+exit:	beq $zero, $zero, exit
+		.2byte	exit	
+open_name:
+		.asciiz "A       BIT"
+tmp_name:
+		.asciiz "12345678123"
+		
+exec:
+		push	$ra
+		push	$a0			#exectable name
+		push	$v0
+		push	$a1
+		push	$a2
+		
 		jal		fopen		
-		beq		$v0, $zero, l1
-		jal		fread_32
-		jal		fread_32
-		jal		fread_32
-		jal		fread_32
+		beq		$v0, $zero, l1		#if file open success
+		
+		la		$a0, F_LENGTH
+		lw		$a0, 0x0($a0)
+		srl		$a0, $a0, 1
+		li		$a1, 0x1000
+		jal		fread
+		
+		jal		fclose					
 		
 l1:		move	$a0, $v0
 		li		$v0, 4		
 		li		$a1, 0
 		li		$a2, 0
+		
 		syscall
 		
-exit:	beq $zero, $zero, exit
-		.2byte	exit	
+		li		$gp, 0x1002
+		li		$a0, 0x1002
+		jr		$a0
+		
+		pop		$a2
+		pop		$a1
+		pop		$v0
+		pop		$a0
+		pop		$ra			
+		
+		jr		$ra
 
-init_disk:		
+init_disk:
 		push	$s0
 		push	$a0
 		push	$a1
@@ -39,7 +69,7 @@ init_disk:
 		li		$a0, 0x0
 #		move	$a0, $zero
 		jal		load_sector
-		
+
 		li		$t0, 0x5100
 		
 		lw		$a0, 0xE3($t0)			#Sectors preceding partition 1				
@@ -47,21 +77,6 @@ init_disk:
 		la		$t1, psec
 		sw		$v0, 0x0($t1)
 		
-		push	$a0
-		push	$a1
-		push	$a2
-		push	$v0
-		
-		move	$a0, $v0
-		li		$a1, 1
-		move	$a2, $zero
-		li		$v0, 4
-		syscall
-		
-		pop		$v0
-		pop		$a2
-		pop		$a1
-		pop		$a0
 
 		lw		$a0, 0xE5($t0)			#length of partition 1 in sector
 		jal		rever
@@ -96,12 +111,7 @@ init_disk:
 		
 		push	$a1
 		push	$a2
-		push		$v0
-		
-		li		$a1, 20
-		li		$a2, 0
-		li		$v0, 4
-		syscall
+		push	$v0
 		
 		pop		$a2
 		pop		$a1
@@ -296,9 +306,9 @@ dir:	push	$ra
 		push	$t3
 		push	$t4
 		push	$t5
-		push	$a0
-		push	$a1
 		push	$a2
+		push	$a1
+		push	$a0				
 		push	$v0
 		push	$s0
 		push	$s1
@@ -450,8 +460,7 @@ fopen:
 		push	$t5
 		push	$t6
 		push	$s0
-		push	$s1
-		push	$v0		
+		push	$s1		
 		
 		move	$s1, $a0				#file name
 		
@@ -461,8 +470,7 @@ fopen:
 		move	$v0, $zero
 		j		open_exit
 		
-open_file:		
-		li		$v0, 1		
+open_file:				
 		
 		li		$t0, 0x3E00
 		move	$t1, $zero
@@ -508,45 +516,40 @@ file_not_exist:
 		beq		$zero, $zero, open_exit
 #-----------exists----------
 file_exist:
-		li		$a0, 10
-		li		$a1, 11
-		li		$a2, 0
-		li		$v0, 4
-		syscall
 		
 		la		$a0, F_OPEN
 		li		$a1, 1
 		sw		$a1, 0x0($a0)
 		
-		la		$a0, F_OFFSET
+		la		$a0, F_OFFSET		#$a0 = F_OFFSET
 		sw		$zero, 0x0($a0)
 		
 		sll		$t6, $t6, 16
 		move	$a0, $t6
-		li		$a1, 2
-		move	$a2, $zero
-		li		$v0, 4
-		syscall
 		
-		jal		rever
+		jal		rever				#change I which is initial cluster to big-endian
 		move	$t6, $v0
 		
 		la		$a0, F_INCLT
 		sw		$t6, 0x0($a0)
 		
-		jal		cal_ini_cluster
+		addi	$t6, $t4, 14
+		lw		$a0, 0x0($t6)		#extract file length
+		jal		rever		
+		
+		la		$a0, F_LENGTH		
+		sw		$v0, 0x0($a0)				
+		
+		la		$a0, F_INCLT
+		lw		$a0, 0x0($a0)
+		jal		cal_ini_cluster_sector				
 		
 		move	$a0, $v0
 		jal		load_sector
-
-open_exit:
-		move	$a0, $v0			
-		li		$a1, 3
-		move	$a2, $zero
-		li		$v0, 4
-		syscall
 		
-		pop		$v0
+		li		$v0, 1
+open_exit:
+				
 		pop		$s1
 		pop		$s0
 		pop		$t6
@@ -566,6 +569,7 @@ open_exit:
 F_OPEN:			.2byte	0x0
 F_NAME:			.asciiz "12345678123"
 F_OFFSET:		.2byte	0x0
+F_LENGTH:		.2byte	0x0
 F_INCLT:		.2byte	0x0
 SYS_SEC_BUF:	.2byte	0x0
 
@@ -662,17 +666,20 @@ cmp_over:
 fseek:	push	$ra
 		pop		$ra
 
-fread_32:
+fread:
+		push	$a0						#read bytes number
+		push	$a1						#destination, pdest
 		push	$ra
 		push	$t0
 		push	$t1
 		push	$t2
-		push	$t3
+		push	$t3						#OFFSET
 		push	$t4
 		push	$s0
 		push	$s1
 		push	$s2		
 		
+		move	$s2, $a0			#$s2, byte number that need to be read, C
 		la		$t0, F_OPEN
 		lw		$t1, 0x0($t0)				#check whether file pointer has been initialized
 		bne		$t1, $zero, f_read			#if file hasn't been opened
@@ -680,19 +687,21 @@ fread_32:
 		j		fread_32_exit
 f_read:
 		la		$t0, F_OFFSET
-		move	$t4, $t0
+		move	$t4, $t0		
 		lw		$t0, 0x0($t0)
 		move	$t1, $t0
 		move	$t3, $t0
 		srl		$t0, $t0, 9			# current sector
-		andi	$t1, $t1, 0x1FF		# sector offset
+		andi	$t1, $t1, 0x1FF		# sector offset				
 		
-		jal		cal_ini_cluster
+		move	$a0, $t0
+		jal		next_cluster
 		
-		add		$t0, $t0, $v0
-		
-		
-		
+		move	$a0, $v0
+		jal		cal_ini_cluster_sector				
+				
+		add		$t0, $zero, $v0
+			
 		la		$t2, SYS_SEC_BUF
 		lw		$t2, 0x0($t2)
 #----whether current sector need to be swapped
@@ -703,9 +712,19 @@ need_swap:
 		move	$a0, $t0
 		jal		load_sector		
 no_need_swap:
+		beq		$s2, $zero, fread_32_exit
 		lw		$v0, 0x5100($t1)
-		addi	$t3, $t3, 2
-		sw		$t3, 0x0($t4)
+		sw		$v0, 0x0($a1)			#move data to *pdest
+		addi	$s2, $s2, -2			#C--
+		addi	$a1, $a1, 2				#pdest++
+		addi	$t1, $t1, 2				#offset++
+		addi	$t3, $t3, 2				#OFFSET++
+		li		$t2, 256
+		bne		$t1, $t2, fread_L1		#if offset == 256
+		sw		$t3, 0x0($t4)			#save OFFSET
+		beq		$zero, $zero, f_read
+fread_L1:								
+		beq		$zero, $zero, no_need_swap
 fread_32_exit:		
 		pop		$s2
 		pop		$s1
@@ -716,9 +735,12 @@ fread_32_exit:
 		pop		$t1
 		pop		$t0
 		pop		$ra
+		pop		$a1
+		pop		$a0
 		jr		$ra
 		
-cal_ini_cluster:
+cal_ini_cluster_sector:
+#$a0: dest cluster
 #$v0: initial cluster for file
 		push	$ra
 		push	$s0
@@ -728,13 +750,12 @@ cal_ini_cluster:
 		la		$s0, DIR_sector
 		lw		$s0, 0x0($s0)		#$s0 = DIR +32
 		addi	$s0, $s0, 32
-		la		$s1, F_INCLT
-		lw		$s1, 0x0($s1)
-		addi	$s1, $s1, -2		#s1 = F_INCLT-2
+		move	$s1, $a0
+		addi	$s1, $s1, -2		#s1 = dest cluster-2
 		la		$s2, pspc
 		lw		$s2, 0x0($s2)
 		mul		$s1, $s1, $s2
-		add		$v0, $s0, $s1		#DIR+32+(INCLT-2)*sector per cluster
+		add		$v0, $s0, $s1		#DIR+32+(dest cluster-2)*sector per cluster
 		
 		pop		$s2
 		pop		$s1
@@ -743,13 +764,44 @@ cal_ini_cluster:
 		jr		$ra
 		
 next_cluster:
-#$a0: current cluster
-#$
+#$a0: dest cluster
+#0x3D00 fat table
 		push	$ra
+		push	$a0
+		push	$a1
+		push	$a2		
+		push	$t0
+		push	$t1
+		push	$s0
+		push	$s1					#count
+
+		move	$s1, $a0
+
+		la		$t0, F_INCLT		#$t0, initial cluster
+		lw		$t0, 0x0($t0)
+		la		$t1, pspc			#$t1, sector per cluster
+		lw		$t1, 0x0($t1)
+				
+nxt_clt_loop:
+		ble		$s1, $zero, nxt_clt_exit
+		lh		$s0, 0x3D00($t0)	# $S0=CLUSTER[$T0]
+		sll		$a0, $s0, 16
+		jal		rever
+		sub		$s1, $s1, $t1
+		move	$t0, $a0
+		beq		$zero, $zero, nxt_clt_loop		
+nxt_clt_exit:		
+		move	$v0, $t0
 		
-		
-		
+		pop		$s1
+		pop		$s0
+		pop		$t1
+		pop		$t0
+		pop		$a2
+		pop		$a1
+		pop		$a0								
 		pop		$ra
+		
 		jr		$ra
 		
 fwrite:	push	$ra
@@ -757,10 +809,17 @@ fwrite:	push	$ra
 		jr		$ra
 
 fclose:	push	$ra
+		push	$t1
+		push	$t2
+		
+		la		$t2, SYS_SEC_BUF
+		lw		$t2, 0x0($t2)
+		jal		dump_sector
+		
+		la		$t1, F_OPEN		
+		sw		$zero, 0x0($t1)
+		
+		pop		$t2
+		pop		$t1
 		pop		$ra
 		jr		$ra
-		
-tmp_name:
-		.asciiz "12345678123"
-open_name:
-		.asciiz "A       TXT"

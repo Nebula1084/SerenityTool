@@ -18,7 +18,7 @@ SysEntry:
 			mtc0    $t0, $c2        #State = State[31:2],2'b01 #enable interrupt
 	
 			add     $t0, $v0, $v0           
-			addi    $t0, $t0, 0x4C80        #caculate the vector address
+			addi    $t0, $t0, 0x4000        #caculate the vector address
 			lw      $t0, 0($t0)
 			jalr    $t0, $ra                #enter system trap
 
