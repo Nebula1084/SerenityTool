@@ -1,3 +1,3 @@
 mingw32-make -f OS.soft
 cls
-SerenityVM FileSys.bit
+SerenityVM boot.bit

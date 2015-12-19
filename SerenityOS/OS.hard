@@ -3,22 +3,29 @@ SLINK   = SerenityLINK.exe
 MV = copy
 RM = del
 
-FileSys.bit: bin\IntEntry.bit\
-	bin\IVT.bit bin\TVT.bit\
-	bin\boot.bit	\
+All: build\SVD.vhd build\boot.bit
+
+build\SVD.vhd: bin\IntEntry.bit\
+	bin\IVT.bit bin\kernal.bit\
 	bin\HardKBInt.bit \
 	bin\Hardgetchar.bit \
-	bin\clear.bit
+	SVD.vhd
 
-	$(SLINK) -o FileSys.bit \
+	$(SLINK) -o OS.bit \
 		bin\IntEntry.bit \
 		bin\IVT.bit \
-		bin\TVT.bit \
+		bin\kernal.bit \
 		bin\HardKBInt.bit \
-		bin\Hardgetchar.bit \
-		bin\clear.bit \
-		bin\boot.bit
+		bin\Hardgetchar.bit
+	
+	$(MV) SVD.vhd.org SVD.vhd
+	python load_os.py	
+	$(MV) SVD.vhd build\SVD.vhd
 
+build\boot.bit: bin\boot.bit	
+	$(MV)   bin\boot.bit boot.bit 
+	$(MV)   bin\boot.bit build\boot.bit
+	
 bin\\%.bit: src\%.mips
 	$(SASM) $<
 	$(MV)   src\*.bit bin\*.bit
