@@ -24,8 +24,8 @@
 #define DCONT 0x5100
 
 #define D_COMM_NONE 0
-#define D_COMM_WRITE 1
-#define D_COMM_READ 2
+#define D_COMM_READ 1
+#define D_COMM_WRITE 2
 
 #include <iostream>
 

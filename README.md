@@ -65,8 +65,8 @@ Send command to 0x50FE and the ready whose adress is 50FF would indicate the sta
 disk access
 ~~~
 D_COMM_NONE 0
-D_COMM_WRITE 1
-D_COMM_READ 2
+D_COMM_READ 1
+D_COMM_WRITE 2
 
 BUSY 0
 READY 1

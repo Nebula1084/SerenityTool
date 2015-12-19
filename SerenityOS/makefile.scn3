@@ -4,20 +4,14 @@ MV = copy
 RM = del
 
 SerenityOS.bit: bin\IntEntry.bit bin\IVT.bit bin\TVT.bit \
-	bin\print.bit bin\printstr.bit bin\printint.bit bin\putchar.bit  bin\getchar.bit \
-	bin\editor.bit bin\clear.bit
+	bin\editor.bit bin\clear.bit bin\KBInt.bit bin\getchar.bit
 
 	$(SLINK) -o SerenityOS.bit \
 		bin\IntEntry.bit \
 		bin\IVT.bit \
 		bin\TVT.bit \
-		bin\print.bit \
-		bin\printstr.bit \
-		bin\printint.bit \
-		bin\putchar.bit \
-		bin\getchar.bit \
-		bin\editor.bit \
-		bin\clear.bit
+		bin\editor.bit bin\getchar.bit \
+		bin\clear.bit bin\KBInt.bit
 
 bin\\%.bit: src\%.mips
 	$(SASM)	$<
@@ -26,6 +20,4 @@ bin\\%.bit: src\%.mips
 	
 .PHONY: clean
 clean:
-	$(RM) bin/*.bit *.bit
-
-
+	$(RM) bin\*.bit *.bit

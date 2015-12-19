@@ -66,8 +66,9 @@ init_disk:
 		push	$t4
 
 		#load 0 sector
+		li		$a0, 0x000000FF
+		jal		load_sector		#initialization
 		li		$a0, 0x0
-#		move	$a0, $zero
 		jal		load_sector
 
 		li		$t0, 0x5100
@@ -198,7 +199,7 @@ load_sector:
 		push	$s0
 		
 		sw		$a0, 0x50FC($zero)
-		addi	$s0, $zero, 2
+		addi	$s0, $zero, 1
 		sh		$s0, 0x50FE($zero)
 SUS_L:	lh		$s0, 0x50FF($zero)
 		beq		$s0, $zero, SUS_L
@@ -216,7 +217,7 @@ dump_sector:
 		push	$s0
 		
 		sw		$a0, 0x50FC($zero)
-		addi	$s0, $zero, 1
+		addi	$s0, $zero, 2
 		sh		$s0, 0x50FE($zero)
 SUS_D:	lh		$s0, 0x50FF($zero)
 		beq		$s0, $zero, SUS_L				

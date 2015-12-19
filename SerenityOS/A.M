@@ -1,5 +1,3 @@
-		move	$gp, $zero
-		li		$sp, 0x2FFE
 		la		$a0, hello_world
 		li		$a1, 2
 		li		$v0, 1

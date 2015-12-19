@@ -1,11 +1,11 @@
 .ORIGIN 0x4000
-		.2byte print		# print
-		.2byte printstr   	# printstr
-    	.2byte putchar   	# putchar
-		.2byte getchar	 	# getchar
-		.2byte printint		# printint
-		.2byte 0x4280	# init_disk
-		.2byte 0x4300	# clear
+                .2byte print		# print
+                .2byte printstr   	# printstr
+                .2byte putchar   	# putchar
+                .2byte 0x4280	 	# getchar
+                .2byte printint		# printint
+                .2byte 0x4280	# init_disk
+                .2byte 0x4300	# clear
 
 print:	#---------------------syscall print
 		push	$a0				#$a0, character that would be printed
@@ -86,45 +86,7 @@ putchar: #----------------------syscall putchar
 		pop		$a0
 		jr		$ra
 		
-# syscall $v0 = 2
-
-
-getchar: #-------------------------syscall getchar
-# $s0	BUFFER
-# $s1	mem[IN]
-# $s2	OUT
-# $s3	mem[OUT]
-                push    $s0
-                push    $s1
-                push    $s2
-                push    $s3
-                push    $t0
-        
-                li		$s0, 0x4706		# $s0 = BUFFER
-		li		$s2, 0x4704		# $s2 = OUT
-		lw		$s3, 0($s2)		# $s3 = mem[OUT]
-getchar_LOOP:	
-		lw		$s1, 0x4702($zero)		# $s1 = mem[IN]
-		beq		$s1, $s3, getchar_LOOP
-
-		add 	$t0, $s3, $s0
-		lw		$a0, 0($t0)		# $a0 = mem[OUT + BUFFER]
-
-		addi    $s3, $s3, 1         # $s3 = mem[OUT] + 1
-                sltiu   $t0, $s3, 16
-                beq     $t0, $zero, getchar_SUB     # if($s3 >= 16) goto SUB;
-                beq     $zero, $zero, getchar_NOT_SUB # else goto NOT_SUB;
-getchar_SUB:
-                li      $s3, 0              # $s3 = $s3 % 16
-getchar_NOT_SUB:
-		sw		$s3, 0($s2)
-
-                pop     $t0
-                pop     $s3
-                pop     $s2
-                pop     $s1
-                pop     $s0
-                jr      $ra
+# syscall $v0 = 2            
 				
 printint:	#------------------------syscall printint
 #printINT

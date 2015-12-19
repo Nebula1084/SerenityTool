@@ -20,12 +20,18 @@ SerenityOS.bit: bin\IntEntry.bit bin\IVT.bit bin\TVT.bit bin\KBInt.bit bin\test.
 
 FileSys.bit: bin\IntEntry.bit\
 	bin\IVT.bit bin\TVT.bit\
-	bin\KBInt.bit bin\boot.bit	
+	bin\boot.bit	\
+	bin\KBInt.bit \
+	bin\getchar.bit \
+	bin\clear.bit
+
 	$(SLINK) -o FileSys.bit \
 		bin\IntEntry.bit \
 		bin\IVT.bit \
 		bin\TVT.bit \
 		bin\KBInt.bit \
+		bin\getchar.bit \
+		bin\clear.bit \
 		bin\boot.bit
 
 bin\\%.bit: src\%.mips

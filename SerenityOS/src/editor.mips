@@ -40,7 +40,7 @@ MOVELOOP1:      lh      $t0, -1($t2)
                 sh      $t0, 0($t2)
                 addi    $t2, $t2, -1
                 beq     $t1, $t2, INSERT
-                j       MOVELOOP1
+                jd      MOVELOOP1
 INSERT:         sh      $a0, 0($t1)
                 addi    $s3, $s3, 1
                 addi    $s4, $s4, 1 
@@ -49,7 +49,7 @@ PRINT:          li      $a0, 0x2000
                 li      $a1, 40
                 li      $v0, 1
                 syscall 
-                j       MAINLOOP
+                jd      MAINLOOP
            
 BACKSPACE:      beq     $s3, $zero, PRINT
                 addi    $t1, $s3, 0x2000
@@ -62,11 +62,11 @@ MOVELOOP2:      lh      $t0, 0($t1)
 DELETE:         sh      $zero, -1($t2)
                 addi    $s3, $s3, -1
                 addi    $s4, $s4, -1
-                j       PRINT
+                jd      PRINT
 
-UPARROW:        j       MAINLOOP
+UPARROW:        jd      MAINLOOP
 
-DOWNARROW:      j       MAINLOOP
+DOWNARROW:      jd      MAINLOOP
 
 LEFTARROW:      beq     $s3, $zero, MAINLOOP
                 sh      $t5, 0x2000($s3)
@@ -76,10 +76,10 @@ LEFTARROW:      beq     $s3, $zero, MAINLOOP
                 sh      $t7, 0x2000($s3)
                 lh      $t1, 0x2000($s4)
                 beq     $t1, $zero, DECQ
-                j       PRINT
+                jd      PRINT
                 
 DECQ:           addi    $s4, $s4, -1
-                j       PRINT                
+                jd      PRINT                
 
 RIGHTARROW:     beq     $s3, $s4, MAINLOOP
                 sh      $t5, 0x2000($s3)
@@ -88,11 +88,11 @@ RIGHTARROW:     beq     $s3, $s4, MAINLOOP
                 move    $t5, $t1
                 sh      $t7, 0x2000($s3)
                 beq     $s3, $s4, INCQ
-JP:             j       PRINT
+JP:             jd      PRINT
                 
 INCQ:           beq     $t5, $zero, JP
                 addi    $s4, $s4, 1
-                j       PRINT
+                jd      PRINT
                              
 GETCHAR:        push    $v0
                 li      $v0, 3
