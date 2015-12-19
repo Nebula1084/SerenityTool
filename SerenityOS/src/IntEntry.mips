@@ -3,10 +3,9 @@
 		push    $t0
 		push    $t1
 		push    $t2
-		
-		push	$gp
-		
-		move	$gp, $zero
+        push    $gp
+
+        add     $gp, $zero, $zero
 
 		mfc0    $t0, $c0
 		push    $t0             #push EPC
@@ -27,7 +26,8 @@
         pop  	$t0    #pop EPC
         mtc0 	$t0, $c0
 
-		pop		$gp
+        pop     $gp
+
         pop  	$t2
         pop  	$t1
         pop  	$t0

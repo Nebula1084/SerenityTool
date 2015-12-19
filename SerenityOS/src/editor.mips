@@ -1,42 +1,101 @@
 .ORIGIN         0x0
                 li      $sp, 0x2FFE             # initialize $sp
+                move    $gp, $zero
                 
                 la      $a0, str
                 li      $v0, 1
                 li      $a1, 10
                 syscall
                  
-                sw      $zero, 0x4FFE($zero)     
-                move    $s6, $zero              # pointer to the current character in memory
-                move    $s7, $zero              # the offset of the last character in memory
-                li      $t7, 40                 # width of screen
-                li      $t6, 25                 # height of screen
-                li      $t5, 0x1000             # capity of the memory allocated to the editor
-                li      $s5, 0x5F               # underline
-                li      $s4, 0xFFFF0000         # mask 
-                                
-                move    $a0, $s5
-                li      $a1, 1
-                move    $a2, $zero
-                jal     PRINTCHAR
+                sw      $zero, 0x4FFE($zero)  
+                li      $s7, 40                 # width of screen 
+                li      $s6, 25                 # height of screen 
+                li      $s5, 0x0800             # capity of the memory allocated to the editor
+                li      $s4, 1                  # the offset of the last character in memory      
+                move    $s3, $zero              # pointer to the current character in memory
+                li      $t7, 0x5F               # underline
+                li      $t6, 0x0000FFFF         # mask 
+                move    $t5, $zero
+                
+                sh      $t7, 0x2000($zero)
+                sh      $zero, 0x3001($zero) 
                 
 MAINLOOP:       jal     GETCHAR
-                sw      $a0, 0x3000($zero)
-                #jal     PRINTCHAR
+                li      $t0, 0x00010026         # up arrow
+                beq     $a0, $t0, UPARROW       
+                li      $t0, 0x00010028         # down arrow
+                beq     $a0, $t0, DOWNARROW
+                li      $t0, 0x00010025         # left arrow
+                beq     $a0, $t0, LEFTARROW
+                li      $t0, 0x00010027         # right arrow
+                beq     $a0, $t0, RIGHTARROW
+                li      $t0, 0x00000008         # backspace
+                beq     $a0, $t0, BACKSPACE                      
+                
+                and     $a0, $a0, $t6
+                addi    $t1, $s3, 0x2000
+                addi    $t2, $s4, 0x2000
+                beq     $t1, $t2, INSERT
+MOVELOOP1:      lh      $t0, -1($t2)
+                sh      $t0, 0($t2)
+                addi    $t2, $t2, -1
+                beq     $t1, $t2, INSERT
+                j       MOVELOOP1
+INSERT:         sh      $a0, 0($t1)
+                addi    $s3, $s3, 1
+                addi    $s4, $s4, 1 
+                
+PRINT:          li      $a0, 0x2000
+                li      $a1, 40
+                li      $v0, 1
+                syscall 
                 j       MAINLOOP
+           
+BACKSPACE:      beq     $s3, $zero, PRINT
+                addi    $t1, $s3, 0x2000
+                addi    $t2, $s4, 0x2000
+                beq     $s3, $s4, DELETE
+MOVELOOP2:      lh      $t0, 0($t1)
+                sh      $t0, -1($t1)
+                addi    $t1, $t1, 1
+                bne     $t1, $t2, MOVELOOP2
+DELETE:         sh      $zero, -1($t2)
+                addi    $s3, $s3, -1
+                addi    $s4, $s4, -1
+                j       PRINT
 
-                                      
+UPARROW:        j       MAINLOOP
+
+DOWNARROW:      j       MAINLOOP
+
+LEFTARROW:      beq     $s3, $zero, MAINLOOP
+                sh      $t5, 0x2000($s3)
+                addi    $s3, $s3, -1
+                lh      $t1, 0x2000($s3)
+                move    $t5, $t1
+                sh      $t7, 0x2000($s3)
+                lh      $t1, 0x2000($s4)
+                beq     $t1, $zero, DECQ
+                j       PRINT
+                
+DECQ:           addi    $s4, $s4, -1
+                j       PRINT                
+
+RIGHTARROW:     beq     $s3, $s4, MAINLOOP
+                sh      $t5, 0x2000($s3)
+                addi    $s3, $s3, 1
+                lh      $t1, 0x2000($s3)
+                move    $t5, $t1
+                sh      $t7, 0x2000($s3)
+                beq     $s3, $s4, INCQ
+JP:             j       PRINT
+                
+INCQ:           beq     $t5, $zero, JP
+                addi    $s4, $s4, 1
+                j       PRINT
+                             
 GETCHAR:        push    $v0
-                push    $a3
                 li      $v0, 3
-                syscall
-                move    $a0, $a3
-                pop     $a3
-                pop     $v0
-                jr      $ra
-
-PRINTCHAR:      push    $v0
-                li      $v0, 2
                 syscall
                 pop     $v0
                 jr      $ra
