@@ -7,6 +7,7 @@
 			.2byte init_disk	# init_disk	5
 			.2byte clear		# clear		6			
 			.2byte sys_exec		#			7
+#sys_exec:  @$a0			#exectable name
 			.2byte dir			#			8
 			.2byte fopen		#			9
 			.2byte fread		#			10
@@ -201,14 +202,23 @@ sys_exec:
 		push	$v0
 		push	$a1
 		push	$a2
+        push    $t0         #ptr to EXE_TOP
+        push    $s0         #EXE_TOP
+        push    $t1
 		
+        la      $t0, EXE_TOP
+        lw      $s0, 0x0($t0)
+        
 		jal		fopen		
 		beq		$v0, $zero, l1		#if file open success
 		
-		la		$a0, F_LENGTH
-		lw		$a0, 0x0($a0)
+		la		$a0, F_LENGTH        
+		lw		$a0, 0x0($a0)         #$a0 current exectable length
+        add     $t1, $s0, $a0       # EXE_TOP = EXE_TOP + F_LENGTH
+        sw      $t1, 0x0($t0)
+        push    $a0                 #push F_LENGTH
 		srl		$a0, $a0, 1
-		li		$a1, 0x300
+        move    $a1, $s0
 		jal		fread
 		
 		jal		fclose					
@@ -224,11 +234,19 @@ l1:		move	$a0, $v0
 		jal		clear
 
 		push	$gp
-		li		$gp, 0x302
-		li		$a0, 0x302
-		jr		$a0
+        addi    $gp, $s0, 2		
+        addi    $a0, $s0, 2		
+		jalr	$a0, $ra
 		pop		$gp
         
+        pop     $a0             # pop F_LENGTH
+        lw      $s0, 0x0($t0)
+        sub     $t1, $s0, $a0   # EXE_TOP = EXE_TOP - F_LENGTH
+        sw      $t1, 0x0($t0)   
+        
+        pop     $t1
+        pop     $s0
+        pop     $t0
 		pop		$a2
 		pop		$a1
 		pop		$v0
@@ -236,6 +254,9 @@ l1:		move	$a0, $v0
 		pop		$ra			
 
 		jr		$ra
+        
+EXE_TOP:
+        .2byte  0x300
 
 init_disk:
 		push	$s0
