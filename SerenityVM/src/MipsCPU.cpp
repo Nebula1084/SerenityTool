@@ -86,7 +86,9 @@ void MipsCPU::run(){
 			} else {
 				keycode = KeyCode::toVKC(0, keycode);
 			}
-			MMU.sw(BKADR, keycode);
+            short* m = MMU.getMemory();
+            m[BKADR+0]=(short)(keycode>>16);
+            m[BKADR+1]=(short)(keycode&0xFFFF);			
 			// Log::logFile << hex << setw(4) <<MMU.getData(BKADR) << setw(4) << MMU.getData(BKADR+1) << endl;
 			cpf[$CAUSE] = $KBINT;
 			cpf[$STATE] = cpf[$STATE] | 0x00000002;

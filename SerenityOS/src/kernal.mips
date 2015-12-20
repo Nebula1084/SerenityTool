@@ -12,7 +12,7 @@
 			.2byte fread		#			10
 			.2byte fwrite		#			11
 			.2byte fseek		#			12
-			.2byte fclose		# 			13			
+			.2byte fclose		# 			13					
 
 print:	#---------------------syscall print
 			push	$a0				#$a0, character that would be printed
@@ -208,7 +208,7 @@ sys_exec:
 		la		$a0, F_LENGTH
 		lw		$a0, 0x0($a0)
 		srl		$a0, $a0, 1
-		li		$a1, 0x1000
+		li		$a1, 0x300
 		jal		fread
 		
 		jal		fclose					
@@ -222,17 +222,19 @@ l1:		move	$a0, $v0
 		move	$a1, $zero
 		move	$a2, $zero
 		jal		clear
-		
-		li		$gp, 0x1002
-		li		$a0, 0x1002
+
+		push	$gp
+		li		$gp, 0x302
+		li		$a0, 0x302
 		jr		$a0
-		
+		pop		$gp
+        
 		pop		$a2
 		pop		$a1
 		pop		$v0
 		pop		$a0
 		pop		$ra			
-		
+
 		jr		$ra
 
 init_disk:
