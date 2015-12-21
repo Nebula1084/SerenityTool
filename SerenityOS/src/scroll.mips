@@ -1,0 +1,21 @@
+.ORIGIN		0x4400
+			push	$t0, $t1, $t2, $t3, $t4
+			
+			li		$t0, 40			# length of each line
+			mul		$t1, $t0, $a0   # offset
+			move	$t2, $t1		# current char
+			li		$t3, 1000       # whole screen
+			
+LOOP:		lh		$t0, 0x3000($t2)
+			sub		$t4, $t2, $t1		
+			sh		$t0, 0x3000($t4)
+			addi	$t2, $t2, 1
+			bne		$t2, $t3, LOOP
+
+			sub		$t2, $t2, $t1
+LOOP2:		sh		$zero, 0x3000($t2)
+			addi	$t2, $t2, 1
+			bne		$t2, $t3, LOOP2
+						
+			pop		$t0, $t1, $t2, $t3, $t4
+			jr		$ra
