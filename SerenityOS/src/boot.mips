@@ -33,14 +33,14 @@ boot_finish:
 		ori		$t0, $t0, 0x1
 		mtc0	$t0, $c2			#enable interrupt
 		
-		li		$v0, 5
+		li		$v0, 5              #initial disk 0x54
 		syscall
 
 		li		$v0, 8
 		syscall
 		la		$a0, open_name
 		li		$v0, 7
-		syscall
+		syscall                       #66
 		
 		la		$a0, THIS_BOOT
 		li		$a1, 2

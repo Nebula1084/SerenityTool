@@ -55,17 +55,17 @@ void MipsCPU::run(){
 				case D_COMM_WRITE:
 					Log::logFile << "Write" << DCONT << endl;
 					for (int i=0; i<256; i++){
-						tmp = *(MMU.getMemory()+DCONT+2*i)<<8 + *(MMU.getMemory()+DCONT+2*i+1);
+						tmp = MMU.getMemory()[DCONT+i];
+                        tmp = ((tmp >> 8) & 0x00FF) + (tmp << 8);
+                        Log::logFile << i << "----x" << hex << tmp << endl;
 						fwrite(&tmp, 2, 1, disk);	
-					}					
+					}
 				break;
 				case D_COMM_READ:
 					Log::logFile << "Read" << DCONT << endl;
 					for (int i=0; i<256; i++){						
-						fread(&tmp, 2, 1, disk);
-						Log::logFile << "first" << hex << tmp << endl;		
-						tmp = ((tmp >> 8) & 0x00FF) + (tmp << 8);
-						Log::logFile << "second" << hex << tmp << endl;						
+						fread(&tmp, 2, 1, disk);								
+						tmp = ((tmp >> 8) & 0x00FF) + (tmp << 8);												
 						MMU.sh(DCONT+i, tmp);
 					}					
 				break;

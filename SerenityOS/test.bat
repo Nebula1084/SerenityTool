@@ -1,0 +1,2 @@
+cls
+SerenityVM boot.bit

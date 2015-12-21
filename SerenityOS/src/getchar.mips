@@ -1,4 +1,4 @@
-.ORIGIN     0x4280
+.ORIGIN     0x4600
 			push	$t0
 
 LOOP:		lw		$t0, 0x4FFE($zero)
