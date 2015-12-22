@@ -17,6 +17,7 @@
 			.2byte fseek		#			12
 			.2byte fclose		# 			13			
             .2byte printstr2    #           14
+            .2byte scroll       #           15
 
 print:	#---------------------syscall print
 			push	$a0				#$a0, character that would be printed
@@ -231,6 +232,12 @@ sys_exec:
         lw      $s0, 0x0($t0)
         
 		jal		fopen		
+        
+        push    $a0
+        li      $a0, 0x65
+        sh      $a0, 0x3060($zero)
+        pop     $a0
+        
 		beq		$v0, $zero, l1		#if file open success
 		
 		la		$a0, F_LENGTH        
@@ -242,16 +249,40 @@ sys_exec:
         move    $a1, $s0
 		jal		fread        #3826
         
+        push    $a0
+        li      $a0, 0x66
+        sh      $a0, 0x3060($zero)
+        pop     $a0
+        
         move	$a1, $zero
 		move	$a2, $zero
-		jal		clear
+		#jal		clear
 		
 		jal		fclose					#382e
-		
+        
+		push    $a0
+        li      $a0, 0x67
+        sh      $a0, 0x3060($zero)
+        pop     $a0
 l1:		
+
+        push    $a1
+        push    $a2
+        push    $a0
+        
+        addi    $a0, $s0, 2
+        li      $a1, 10
+        li      $a2, 10#387c
+        jal     printint
+        
+        pop     $a0
+        pop     $a2
+        pop     $a1  
+
 		push	$gp
         addi    $gp, $s0, 2		
-        addi    $a0, $s0, 2		
+        addi    $a0, $s0, 2             
+        
 		jalr	$a0, $ra     #3856
 		pop		$gp
         
@@ -1333,8 +1364,9 @@ fclose:	push	$ra
         pop     $a0
 		pop		$ra
 		jr		$ra
-        
-printstr2:                    
+                
+printstr2:
+            push    $ra                    
 			push	$a0, $a1, $t0		
 			
 printstr2_LOOP:		
@@ -1347,4 +1379,32 @@ printstr2_LOOP:
 			
 printstr2_EXIT:		
             pop		$a0, $a1, $t0
+            pop     $ra
 			jr		$ra	
+            
+scroll:
+        push    $ra
+        push	$t0, $t1, $t2, $t3, $t4
+        
+        li		$t0, 40			# length of each line
+        mul		$t1, $t0, $a0   # offset
+        move	$t2, $t1		# current char
+        li		$t3, 1000       # whole screen
+        
+scroll_LOOP:		
+        lh		$t0, 0x3000($t2)
+        sub		$t4, $t2, $t1		
+        sh		$t0, 0x3000($t4)
+        addi	$t2, $t2, 1
+        bne		$t2, $t3, scroll_LOOP
+
+        sub		$t2, $t2, $t1
+scroll_LOOP2:		
+        sh		$zero, 0x3000($t2)
+        addi	$t2, $t2, 1
+        bne		$t2, $t3, scroll_LOOP2
+                    
+        pop		$t0, $t1, $t2, $t3, $t4
+        pop     $ra
+        
+        jr      $ra

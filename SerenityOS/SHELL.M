@@ -35,9 +35,14 @@
         li      $v0, 13     #fclose
         syscall                      
 		
+        li      $a0, 0x61
+        sh      $a0, 0x3070($zero)
+        
         la      $a0, open_name
 		li		$v0, 7
 		syscall #37c
+        li      $a0, 0x62
+        sh      $a0, 0x3051($zero)
         
 sus:    jd      sus             
 
