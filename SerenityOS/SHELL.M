@@ -33,17 +33,16 @@
         syscall
         
         li      $v0, 13     #fclose
-        syscall
-        
-        
-sus:    jd      sus           
+        syscall                      
 		
         la      $a0, open_name
 		li		$v0, 7
-		syscall
+		syscall #37c
+        
+sus:    jd      sus             
 
 hello_world:
-		.asciiz	"Hello World!"
+		.asciiz	"He~~~!"
 open_name:
         .asciiz "EDIT    BIT"
 new_file:

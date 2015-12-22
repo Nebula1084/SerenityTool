@@ -241,23 +241,18 @@ sys_exec:
 		srl		$a0, $a0, 1
         move    $a1, $s0
 		jal		fread        #3826
-		
-		jal		fclose					
-		
-l1:		move	$a0, $v0				
-		li		$a1, 0
-		li		$a2, 0
-		
-		jal		printint
-		
-		move	$a1, $zero
+        
+        move	$a1, $zero
 		move	$a2, $zero
 		jal		clear
-
+		
+		jal		fclose					#382e
+		
+l1:		
 		push	$gp
         addi    $gp, $s0, 2		
         addi    $a0, $s0, 2		
-		jalr	$a0, $ra
+		jalr	$a0, $ra     #3856
 		pop		$gp
         
         pop     $a0             # pop F_LENGTH
@@ -1052,7 +1047,8 @@ fread:
 		push	$t4
 		push	$s0
 		push	$s1
-		push	$s2		
+		push	$s2
+        push    $v0
 		
 		move	$s2, $a0			#$s2, byte number that need to be read, C 4070
 		la		$t0, F_OPEN
@@ -1069,10 +1065,10 @@ f_read:
 		srl		$t0, $t0, 8			# current sector
 		andi	$t1, $t1, 0xFF		# sector offset				
 		
-		move	$a0, $t0 #40c4
+		move	$a0, $t0              #40c4
 		jal		next_cluster
 		
-		move	$a0, $v0         #409c
+		move	$a0, $v0         
 		jal		cal_ini_cluster_sector		
 				
 		add		$t0, $zero, $v0
@@ -1087,7 +1083,7 @@ need_swap:
 		move	$a0, $t0
 		jal		load_sector		
 no_need_swap:
-		beq		$s2, $zero, fread_32_exit
+		ble		$s2, $zero, fread_32_exit    #401a
 		lw		$v0, 0x5100($t1)
 		sw		$v0, 0x0($a1)			#move data to *pdest
 		addi	$s2, $s2, -2			#C--
@@ -1107,6 +1103,7 @@ fread_32_exit:
         ble     $t3, $t5, fread_end
         sw      $t3, 0x0($t4)
 fread_end:
+        pop     $v0
 		pop		$s2
 		pop		$s1
 		pop		$s0
@@ -1229,6 +1226,7 @@ fwrite:	#syscall-------------------------------fwrite
         push    $s2
         push    $t0
         push    $t1
+        push    $v0
         
         move    $s2, $a0                    #$s2, byte number that need to be written, C
         la      $t0, F_OPEN
@@ -1263,7 +1261,7 @@ fwrite_need_swap:
 		move	$a0, $t0
 		jal		load_sector		
 fwrite_no_need_swap:    
-		beq		$s2, $zero, fwrite_exit   #4286
+		ble		$s2, $zero, fwrite_exit   #4286
 		lw		$v0, 0x0($a1)
 		sw		$v0, 0x5100($t1)			#move data to sector
 		addi	$s2, $s2, -2			#C--
@@ -1283,6 +1281,7 @@ fwrite_exit:
         ble     $t3, $t5, fwrite_end #42a6
         sw      $t3, 0x0($t4)
 fwrite_end:
+        pop     $v0
         pop     $t1
         pop     $t0       
         pop     $s2
@@ -1300,6 +1299,7 @@ fclose:	push	$ra
         push    $t4
 		push    $s0
         push    $s1
+        push    $v0
         
 		la		$a0, SYS_SEC_BUF  #42ec
 		lw		$a0, 0x0($a0)
@@ -1323,6 +1323,7 @@ fclose:	push	$ra
 		la		$t1, F_OPEN
 		sw		$zero, 0x0($t1)   #433a
 		
+        pop     $v0
         pop     $s1
         pop     $s0
         pop     $t4
