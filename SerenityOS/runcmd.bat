@@ -1,5 +1,5 @@
 SerenityASM.exe src\cmd.mips
-move src\cmd.mip F:\SHELL.BIT
+move src\cmd.bit H:\SHELL.BIT
 cd ..
 mingw32-make 
 cd SerenityOS

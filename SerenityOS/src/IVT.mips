@@ -2,7 +2,7 @@
 .ORIGIN 0x4D00
 			.2byte		SysEntry  #syscall
 			.2byte		0x4800  #KBInt
-			.2byte		0x4C00  #Timer
+			.2byte		Timer  #Timer
 		
 #----------------Syscall Entry----------------------
 SysEntry:
@@ -27,3 +27,19 @@ END1:
 			pop     $t0
 			pop     $ra
 			jr      $ra
+#------------------Timer interrupt
+Timer:
+        push    $t0
+        push    $t1
+
+#        addi    $at, $at, 1
+
+        mfc0    $t0, $c2        #$t0 = State
+        li      $t1, 0xFFFFFFFD
+        and     $t0, $t0, $t1
+        mtc0    $t0, $c2        #State = State[31:2],2'b0x #enable interruption to be accepted
+
+END:
+        pop     $t1
+        pop     $t0
+        jr      $ra
