@@ -1066,10 +1066,10 @@ f_read:
 		lw		$t0, 0x0($t0)
 		move	$t1, $t0
 		move	$t3, $t0
-		srl		$t0, $t0, 9			# current sector
-		andi	$t1, $t1, 0x1FF		# sector offset				
+		srl		$t0, $t0, 8			# current sector
+		andi	$t1, $t1, 0xFF		# sector offset				
 		
-		move	$a0, $t0
+		move	$a0, $t0 #40c4
 		jal		next_cluster
 		
 		move	$a0, $v0         #409c
@@ -1079,11 +1079,11 @@ f_read:
 			
 		la		$t2, SYS_SEC_BUF
 		lw		$t2, 0x0($t2)
-#----whether current sector need to be swapped
+#----whether current sector need to be swapped 40dc
 		beq		$t0, $t2, no_need_swap
 need_swap:
 		move	$a0, $t2
-		jal		dump_sector
+		jal		dump_sector      #4186
 		move	$a0, $t0
 		jal		load_sector		
 no_need_swap:
@@ -1095,7 +1095,7 @@ no_need_swap:
 		addi	$t1, $t1, 2				#offset++
 		addi	$t3, $t3, 2				#OFFSET++
 		li		$t2, 256
-		bne		$t1, $t2, fread_L1		#if offset == 256
+		bne		$t1, $t2, fread_L1		#if offset == 256 410a
 		sw		$t3, 0x0($t4)			#save OFFSET
 		beq		$zero, $zero, f_read
 fread_L1:								
@@ -1180,8 +1180,8 @@ nxt_read:
 		sll		$a0, $s0, 16
 		jal		rever
 		sub		$s1, $s1, $t1
-        move    $t2, $t0
-		move	$t0, $a0
+        move    $t2, $t0        #41e8
+		move	$t0, $v0
 		beq		$zero, $zero, nxt_clt_loop		
 nxt_clt_exit:		
 		move	$v0, $t0

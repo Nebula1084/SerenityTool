@@ -32,9 +32,7 @@ MAINLOOP:       jal     GETCHAR
                 beq     $a0, $t0, RIGHTARROW
                 li      $t0, 0x00000008         # backspace
                 beq     $a0, $t0, BACKSPACE                      
-                li      $t0, 0x00010000         # mask
-                and     $t0, $t0, $a0
-                bne     $t0, $zero, MAINLOOP
+                
                 and     $a0, $a0, $t6
                 add     $t1, $s3, $t4
                 add     $t2, $s4, $t4
@@ -43,7 +41,7 @@ MOVELOOP1:      lh      $t0, -1($t2)
                 sh      $t0, 0($t2)
                 addi    $t2, $t2, -1
                 beq     $t1, $t2, INSERT
-                j       MOVELOOP1
+                jd      MOVELOOP1
 INSERT:         sh      $a0, 0($t1)
                 addi    $s3, $s3, 1
                 addi    $s4, $s4, 1 
@@ -52,7 +50,7 @@ PRINT:          move    $a0, $t4
                 li      $a1, 40
                 li      $v0, 1
                 syscall 
-                j       MAINLOOP
+                jd      MAINLOOP
            
 BACKSPACE:      beq     $s3, $zero, PRINT
                 add     $t1, $s3, $t4
@@ -65,11 +63,11 @@ MOVELOOP2:      lh      $t0, 0($t1)
 DELETE:         sh      $zero, -1($t2)
                 addi    $s3, $s3, -1
                 addi    $s4, $s4, -1
-                j       PRINT
+                jd      PRINT
 
-UPARROW:        j       MAINLOOP
+UPARROW:        jd      MAINLOOP
 
-DOWNARROW:      j       MAINLOOP
+DOWNARROW:      jd      MAINLOOP
 
 LEFTARROW:      beq     $s3, $zero, MAINLOOP
                 add     $t3, $t4, $s3
@@ -83,10 +81,10 @@ LEFTARROW:      beq     $s3, $zero, MAINLOOP
                 add     $t3, $t4, $s4
                 lh      $t1, 0($t3)
                 beq     $t1, $zero, DECQ
-                j       PRINT
+                jd      PRINT
                 
 DECQ:           addi    $s4, $s4, -1
-                j       PRINT                
+                jd      PRINT                
 
 RIGHTARROW:     beq     $s3, $s4, MAINLOOP
                 add     $t3, $t4, $s3
@@ -98,11 +96,11 @@ RIGHTARROW:     beq     $s3, $s4, MAINLOOP
                 add     $t3, $t4, $s3    
                 sh      $t7, 0($t3)
                 beq     $s3, $s4, INCQ
-JP:             j       PRINT
+JP:             jd      PRINT
                 
 INCQ:           beq     $t5, $zero, JP
                 addi    $s4, $s4, 1
-                j       PRINT
+                jd      PRINT
                              
 GETCHAR:        push    $v0
                 li      $v0, 3
