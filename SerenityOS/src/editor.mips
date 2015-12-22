@@ -15,10 +15,13 @@
                 move    $s3, $zero              # pointer to the current character in memory
                 li      $t7, 0x5F               # underline
                 li      $t6, 0x0000FFFF         # mask 
-                move    $t5, $zero
+                move    $t5, $zero    
+                la      $t4, EDITORMEM
+                addi    $t4, $t4, 1             # address to store data
                 
-                sh      $t7, 0x2000($zero)
-                sh      $zero, 0x3001($zero) 
+                sh      $t7, 0($t4)
+                addi    $t3, $t4, 1
+                sh      $zero, 0($t3) 
                 
 MAINLOOP:       jal     GETCHAR
                 li      $t0, 0x00010026         # up arrow
@@ -33,27 +36,27 @@ MAINLOOP:       jal     GETCHAR
                 beq     $a0, $t0, BACKSPACE                      
                 
                 and     $a0, $a0, $t6
-                addi    $t1, $s3, 0x2000
-                addi    $t2, $s4, 0x2000
+                add     $t1, $s3, $t4
+                add     $t2, $s4, $t4
                 beq     $t1, $t2, INSERT
 MOVELOOP1:      lh      $t0, -1($t2)
                 sh      $t0, 0($t2)
                 addi    $t2, $t2, -1
                 beq     $t1, $t2, INSERT
-                jd      MOVELOOP1
+                j       MOVELOOP1
 INSERT:         sh      $a0, 0($t1)
                 addi    $s3, $s3, 1
                 addi    $s4, $s4, 1 
                 
-PRINT:          li      $a0, 0x2000
+PRINT:          move    $a0, $t4
                 li      $a1, 40
                 li      $v0, 1
                 syscall 
-                jd      MAINLOOP
+                j       MAINLOOP
            
 BACKSPACE:      beq     $s3, $zero, PRINT
-                addi    $t1, $s3, 0x2000
-                addi    $t2, $s4, 0x2000
+                add     $t1, $s3, $t4
+                add     $t2, $s4, $t4
                 beq     $s3, $s4, DELETE
 MOVELOOP2:      lh      $t0, 0($t1)
                 sh      $t0, -1($t1)
@@ -62,37 +65,44 @@ MOVELOOP2:      lh      $t0, 0($t1)
 DELETE:         sh      $zero, -1($t2)
                 addi    $s3, $s3, -1
                 addi    $s4, $s4, -1
-                jd      PRINT
+                j       PRINT
 
-UPARROW:        jd      MAINLOOP
+UPARROW:        j       MAINLOOP
 
-DOWNARROW:      jd      MAINLOOP
+DOWNARROW:      j       MAINLOOP
 
 LEFTARROW:      beq     $s3, $zero, MAINLOOP
-                sh      $t5, 0x2000($s3)
+                add     $t3, $t4, $s3
+                sh      $t5, 0($t3)
                 addi    $s3, $s3, -1
-                lh      $t1, 0x2000($s3)
+                add     $t3, $t4, $s3
+                lh      $t1, 0($t3)
                 move    $t5, $t1
-                sh      $t7, 0x2000($s3)
-                lh      $t1, 0x2000($s4)
+                add     $t3, $t4, $s3
+                sh      $t7, 0($t3)
+                add     $t3, $t4, $s4
+                lh      $t1, 0($t3)
                 beq     $t1, $zero, DECQ
-                jd      PRINT
+                j       PRINT
                 
 DECQ:           addi    $s4, $s4, -1
-                jd      PRINT                
+                j       PRINT                
 
 RIGHTARROW:     beq     $s3, $s4, MAINLOOP
-                sh      $t5, 0x2000($s3)
+                add     $t3, $t4, $s3
+                sh      $t5, 0($t3)
                 addi    $s3, $s3, 1
-                lh      $t1, 0x2000($s3)
+                add     $t3, $t4, $s3
+                lh      $t1, 0($t3)
                 move    $t5, $t1
-                sh      $t7, 0x2000($s3)
+                add     $t3, $t4, $s3    
+                sh      $t7, 0($t3)
                 beq     $s3, $s4, INCQ
-JP:             jd      PRINT
+JP:             j       PRINT
                 
 INCQ:           beq     $t5, $zero, JP
                 addi    $s4, $s4, 1
-                jd      PRINT
+                j       PRINT
                              
 GETCHAR:        push    $v0
                 li      $v0, 3
@@ -100,4 +110,7 @@ GETCHAR:        push    $v0
                 pop     $v0
                 jr      $ra
                  
-str:    .asciiz "Serenity Editor v1.3"       
+str:    .asciiz "Serenity Editor v2.0"       
+
+EDITORMEM:      .2byte  EDITORMEM
+                .space  0x800
