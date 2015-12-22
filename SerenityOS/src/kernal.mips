@@ -1366,21 +1366,28 @@ fclose:	push	$ra
 		jr		$ra
                 
 printstr2:
-            push    $ra                    
-			push	$a0, $a1, $t0		
+		push	$a0, $a1, $t0, $t1		
+		move	$t1, $zero
 			
 printstr2_LOOP:		
-            lh		$t0, 0($a0)
-			beq		$t0, $zero, printstr2_EXIT
-			sh		$t0, 0x3000($a1)
-			addi	$a0, $a0, 1
-			addi	$a1, $a1, 1
-			j		printstr2_LOOP
+		lh		$t0, 0($a0)
+		beq		$t0, $zero, printstr2_EXIT
+		sh		$t0, 0x3000($a1)
+		addi	$a0, $a0, 1
+		addi	$a1, $a1, 1	
+		addi	$t1, $t1, 1
+		j		printstr2_LOOP
 			
 printstr2_EXIT:		
-            pop		$a0, $a1, $t0
-            pop     $ra
-			jr		$ra	
+		li		$t0, 20
+printstr2_LOOP2:		
+		sh		$zero,0x3000($a1)
+		addi	$a1, $a1, 1
+		addi	$t1, $t1, 1
+		bne		$t0, $t1, printstr2_LOOP2
+						
+		pop		$a0, $a1, $t0, $t1
+		jr		$ra	
             
 scroll:
         push    $ra
