@@ -9,7 +9,7 @@ instruction = fos.read(4)
 
 while True:	
 	instruction = fos.read(4)
-	if instruction=="":
+	if instruction==b"":
 		break	
 	fdisk.write(instruction)
 

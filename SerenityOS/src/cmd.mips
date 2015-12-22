@@ -1,6 +1,9 @@
 .ORIGIN		0x0
-			li		$sp, 0x2FFE
-			move	$gp, $zero
+			move	$a1, $zero
+			move	$a2, $zero
+			li		$v0, 6
+			syscall
+			
 			sw		$zero, 0x4FFE($zero)
 			
 			move	$s7, $zero 		# CMDMEM number
@@ -20,8 +23,6 @@ NEWLINE:	li		$v0, 14
 			la		$a0, PROMPT
 			move	$a1, $t6
 			syscall					# print prompt
-			li		$t0, 0x31
-			sh		$t0, 0x3000($zero)
 			
 CMDLOOP:	li		$v0, 3			# getchar
 			syscall
@@ -108,7 +109,7 @@ DOWNARROW: 	add		$t3, $s5, $s3
 			addi	$t5, $t5, 2
 			li		$t0, 12
 			bne		$t5, $t0, SKIP2
-			addi	$t5, $t5, -2
+			addi	$t5, $t5, -12
 SKIP2:		add		$t0, $t5, $s6
 			lw		$s5, 0($t0)
 			la		$t0, CMDLEN
@@ -140,7 +141,7 @@ RIGHTARROW: beq		$s3, $s4, CMDLOOP
 			sh		$s1, 0($t3)
 			jd		PRINT
 
-ENTER:		add		$t3, $s5, $s3
+ENTER:		add		$t3, $s5, $s3		# print
 			sh		$t7, 0($t3)
 			move	$t7, $zero
 			add		$t3, $s5, $s4
@@ -152,7 +153,21 @@ ENTER:		add		$t3, $s5, $s3
 			move	$a0, $s5
 			addi	$a1, $t6, 11	
 			syscall
-			addi	$t5, $t5, 2
+			
+			la		$t0, DIR
+			move	$t1, $s5
+			move	$t2, $zero
+			li		$t8, 3
+DIRLOOP:	lh		$t3, 0($t0)	
+			lh		$t4, 0($t1)
+			bne		$t3, $t4, SKIPDIR
+			addi	$t2, $t2, 1
+			bne		$t2, $t8, DIRLOOP
+			li		$v0, 8
+			move	$a0, $t6
+			syscall		
+SKIPDIR:			
+			addi	$t5, $t5, 2			# next space
 			li		$t0, 12
 			bne		$t5, $t0, SKIP3
 			addi	$t5, $t5, -12
@@ -162,14 +177,18 @@ SKIP3:		add		$t0, $t5, $s6
 			sh		$zero, 1($s5)
 			move	$s3, $zero
 			move	$s4, $zero
-			addi	$t6, $t6, 40
+			
+			addi	$t6, $t6, 1     	# newline
+			li		$t2, 40
+			mul		$t1, $t6, $t2
 			li		$t0, 400
-			beq		$t0, $t6, SCROLL
+			slt     $t3, $t1, $t0
+			beq		$t3, $zero, SCROLL
 			jd		NEWLINE
 
 SCROLL:		li		$t0, 0x31
 			sh		$t0, 0x3080($zero)
-			li		$a0, 5
+			addi	$a0, $t6, -5
 			li		$v0, 15
 			syscall
 			li		$t0, 40
@@ -185,4 +204,5 @@ CMDMEM3:	.space	20
 CMDMEM4:	.space  20
 CMDMEM5:	.space  20
 CMDLEN:		.space	6
-PROMPT:		.asciiz "Serenity:> _"			
+PROMPT:		.asciiz "Serenity:> _"	
+DIR:		.asciiz "dir"		
