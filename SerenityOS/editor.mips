@@ -111,4 +111,4 @@ GETCHAR:        push    $v0
 str:    .asciiz "Serenity Editor v2.0"       
 
 EDITORMEM:      .2byte  EDITORMEM
-                .space  0x8
+                .space  0x800
