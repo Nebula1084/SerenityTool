@@ -98,7 +98,7 @@ putchar: #----------------------syscall putchar
 			pop		$a0
 			
 			jr		$ra
-		
+
 # syscall $v0 = 2            
 				
 printint:	#------------------------syscall printint
