@@ -4,23 +4,16 @@
 		li		$a1, 2
 		li		$v0, 1
 		syscall   #314
-        la      $a0, new_file
+        la      $a0, open_name
         li      $v0, 9      #fopen
         syscall     # 322
         
-        li      $a0, 10
-        la      $a1, text
-        li      $v0, 11
-        syscall             #fwrite 332
-        
-        li      $v0, 13     #fclose 338
-        syscall 
-        li      $a0, 0
-        li      $v0, 8      #dir 33e
+        li      $v0, 16
         syscall
         
-        li      $a1, 10
-        li      $a2, 10
+        move    $a0, $v0
+        li      $a1, 1
+        li      $a2, 1
         li      $v0, 4
         syscall
         

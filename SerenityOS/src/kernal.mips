@@ -1420,7 +1420,7 @@ ftell:  #--------------syscall ftell
         push    $ra
         
         la      $v0, F_LENGTH
-        lw      $v0, 0x0($zero)
+        lw      $v0, 0x0($v0)
         
         pop     $ra
         
