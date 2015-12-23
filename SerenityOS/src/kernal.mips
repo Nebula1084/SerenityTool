@@ -621,8 +621,7 @@ dir:	push	$ra
 		push	$t4
 		push	$t5
 		push	$a2
-		push	$a1
-		push	$a0				
+		push	$a1		
 		push	$v0
 		push	$s0
 		push	$s1
@@ -634,12 +633,11 @@ s_dir:	mul		$t3, $t1, $t2		#while(dir[0]!=0)
 		add		$t4, $t3, $t0
 		
 		lw		$t5, 0x0($t4)
-		beq		$t5, $zero, s_fin
-		move	$a0, $t5
+		beq		$t5, $zero, s_fin		
 		move	$a1, $t1			#$a1 line number
 		li		$a2, 0
 		li		$v0, 4
-				
+
 		addi	$t5, $t4, 5			#property
 		lh		$t5, 0x0($t5)		#$t5 P
 		
@@ -652,13 +650,14 @@ s_dir:	mul		$t3, $t1, $t2		#while(dir[0]!=0)
 		bne		$t5, $s0, s_dir
 		beq		$t6, $zero, s_dir	
 		move	$a3, $t4
+        move    $a1, $a0
+        addi    $a0, $a0, 1
 		jal		p_n
 		j		s_dir
 s_fin:	
 		pop		$s1
 		pop		$s0
-		pop		$v0
-		pop		$a0
+		pop		$v0		
 		pop		$a1
 		pop		$a2
 		pop		$t5

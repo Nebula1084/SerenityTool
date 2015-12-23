@@ -15,35 +15,16 @@
         
         li      $v0, 13     #fclose 338
         syscall 
+        li      $a0, 0
         li      $v0, 8      #dir 33e
         syscall
         
-        la      $a0, new_file
-        li      $v0, 9      #fopen
+        li      $a1, 10
+        li      $a2, 10
+        li      $v0, 4
         syscall
         
-        li      $a0, 10
-        la      $a1, out
-        li      $v0, 10     #fread 35a
-        syscall
-        
-        la      $a0, out
-        li      $a1, 0
-        li      $v0, 1
-        syscall
-        
-        li      $v0, 13     #fclose
-        syscall                      
-		
-        li      $a0, 0x61
-        sh      $a0, 0x3070($zero)
-        
-        la      $a0, open_name
-		li		$v0, 7
-		syscall #37c
-        li      $a0, 0x62
-        sh      $a0, 0x3051($zero)
-        
+
 sus:    jd      sus             
 
 hello_world:
