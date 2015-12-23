@@ -1,5 +1,14 @@
 .ORIGIN         0x0
+                la      $t0, RETADDR
+                sw      $ra, 0($t0)
                 
+                li      $v0, 6
+                move    $a1, $zero
+                move    $a2, $zero
+                syscall
+
+                #bne     $v0, $zero, LOADFILE
+         
                 la      $a0, str
                 li      $v0, 1
                 li      $a1, 10
@@ -22,6 +31,8 @@
                 sh      $zero, 0($t3) 
                 
 MAINLOOP:       jal     GETCHAR
+                li      $t0, 0x0000001B         # esc
+                beq     $a0, $t0, EXIT
                 li      $t0, 0x00010026         # up arrow
                 beq     $a0, $t0, UPARROW       
                 li      $t0, 0x00010028         # down arrow
@@ -107,8 +118,14 @@ GETCHAR:        push    $v0
                 syscall
                 pop     $v0
                 jr      $ra
+               
+EXIT:           la      $t0, RETADDR
+                lw      $ra, 0($t0)
+                jr      $ra
                  
-str:    .asciiz "Serenity Editor v2.0"       
+str:            .asciiz "Serenity Editor v2.0"       
 
 EDITORMEM:      .2byte  EDITORMEM
                 .space  0x800
+                
+RETADDR:        .space  1

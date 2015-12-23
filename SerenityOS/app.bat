@@ -1,11 +1,7 @@
-SerenityASM.exe SHELL.M
-copy SHELL.bit app\SHELL.BIT
-del SHELL.bit
-
-SerenityASM.exe TEST.M
-copy TEST.BIT app\TEST.BIT
-del TEST.BIT
+SerenityASM.exe cmd.mips
+copy cmd.bit app\SHELL.BIT /Y
+del cmd.bit
 
 SerenityASM.exe editor.mips
-copy editor.bit app\EDIT.BIT
+copy editor.bit app\EDIT.BIT /Y
 del editor.bit

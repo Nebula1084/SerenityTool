@@ -10,6 +10,12 @@ public:
 	MemoryManageUnit(int m,int crtadr): size(m),CRTadr(crtadr),memory(new short[m]), time(0){//set the capacity and display memory address
 		QueryPerformanceCounter(&start_time);
 		QueryPerformanceFrequency(&frequency);/*获取CPU内部时钟频率*/
+        for (int i = 0; i < size; ++i){
+            if (i % 2 == 0)
+                memory[i] = 0x1000;
+            else
+                memory[i] = 0xFFFF;
+        }
 		for (int i = CRTadr; i < size; ++i)
 		{
 			memory[i]=0x20;
