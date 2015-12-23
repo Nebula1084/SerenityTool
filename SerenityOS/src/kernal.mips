@@ -290,6 +290,7 @@ l1:
 		pop		$gp
         
         pop     $a0             # pop F_LENGTH
+        la      $t0, EXE_TOP
         lw      $s0, 0x0($t0)
         sub     $t1, $s0, $a0   # EXE_TOP = EXE_TOP - F_LENGTH
         sw      $t1, 0x0($t0)   
