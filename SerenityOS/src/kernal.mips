@@ -18,6 +18,7 @@
 			.2byte fclose		# 			13			
             .2byte printstr2    #           14
             .2byte scroll       #           15
+            .2byte ftell        #           16
 
 print:	#---------------------syscall print
 			push	$a0				#$a0, character that would be printed
@@ -1411,6 +1412,16 @@ scroll_LOOP2:
         bne		$t2, $t3, scroll_LOOP2
                     
         pop		$t0, $t1, $t2, $t3, $t4
+        pop     $ra
+        
+        jr      $ra
+        
+ftell:  #--------------syscall ftell
+        push    $ra
+        
+        la      $v0, F_LENGTH
+        lw      $v0, 0x0($zero)
+        
         pop     $ra
         
         jr      $ra
