@@ -776,6 +776,7 @@ fopen:
 		push	$t6
 		push	$s0
 		push	$s1
+        push    $v1
 
 		move	$s1, $a0				#file name
 
@@ -875,7 +876,7 @@ file_exist:
 		
 		li		$v0, 1
 open_exit:
-				
+		pop     $v1
 		pop		$s1
 		pop		$s0
 		pop		$t6
