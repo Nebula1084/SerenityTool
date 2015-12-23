@@ -232,7 +232,9 @@ sys_exec:
         la      $t0, EXE_TOP
         lw      $s0, 0x0($t0)
         
-		jal		fopen		
+        push    $v1        
+		jal		fopen
+        pop     $v1		
         
         push    $a0
         li      $a0, 0x65
