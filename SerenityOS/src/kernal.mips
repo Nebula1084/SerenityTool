@@ -321,7 +321,7 @@ l1:
 		jr		$ra
         
 EXE_TOP:
-        .2byte  0x300
+        .2byte  0x0
 
 init_disk:
 		push	$s0
