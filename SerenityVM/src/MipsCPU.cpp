@@ -214,8 +214,7 @@ void MipsCPU::run(){
 			default:
 				operation = "ERROR!!!";
 				cout << "\nError!\n" << endl;
-				cout << "fun is " << fun << endl;
-				cout << operation << " opcode:" << hex << op << " rd:" << rd << " rs:" << rs << " rt:" << rt << " sft:" << sft << " data:" << dat << " address:"<< adr << endl;
+				printReg();
 				getch();
 				break;
 			}
@@ -343,7 +342,7 @@ void MipsCPU::run(){
 		default:
 			cout << "\nError!" << endl; 
 			operation = "ERROR!!!";
-			cout << "op is " << op << endl;
+			printReg();
 			break;
 		}
 		MMU.print();
