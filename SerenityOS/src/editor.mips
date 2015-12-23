@@ -1,9 +1,28 @@
 .ORIGIN         0x0
+                la      $t0, RETADDR
+                sw      $ra, 0($t0)
                 
-                la      $a0, str
-                li      $v0, 1
-                li      $a1, 10
+                li      $v0, 6
+                move    $a1, $zero
+                move    $a2, $zero
                 syscall
+                
+                
+                la      $t0, EDITORMEM
+                addi    $t0, $t0, 1
+                li      $t1, 0x400
+                move    $t2, $zero
+CLEARMEM:       add     $t3, $t0, $t2
+                sh      $zero, 0($t3)
+                addi    $t2, $t2, 1
+                beq     $t1, $t2, SK
+                jd      CLEARMEM
+                
+SK:
+                li      $t0, 0x32
+                sh      $t0, 0x3080($zero)
+                jal     GETCHAR                
+                bne     $v1, $zero, LOADFILE
                  
                 sw      $zero, 0x4FFE($zero)  
                 li      $s7, 40                 # width of screen 
@@ -22,6 +41,8 @@
                 sh      $zero, 0($t3) 
                 
 MAINLOOP:       jal     GETCHAR
+                li      $t0, 0x0000001B         # esc
+                beq     $a0, $t0, EXIT
                 li      $t0, 0x00010026         # up arrow
                 beq     $a0, $t0, UPARROW       
                 li      $t0, 0x00010028         # down arrow
@@ -107,8 +128,114 @@ GETCHAR:        push    $v0
                 syscall
                 pop     $v0
                 jr      $ra
+               
+EXIT:           add     $t3, $t4, $s3
+                sh      $t5, 0($t3)
+                add     $t3, $t4, $s4
+                sh      $zero, 1($t3)
+                sh      $zero, 0($t3)
+                li      $v0, 11         # fwrite
+                li      $a0, 0x40
+                la      $a1, EDITORMEM
+                syscall
+                
+                li      $v0, 13         # fclose
+                syscall
+                la      $t0, RETADDR
+                lw      $ra, 0($t0)
+                jr      $ra
+                
+LOADFILE:       #li      $v0, 14         # test output1
+                #move    $a0, $v1
+                #li      $a1, 40
+                #syscall
+                
+                li      $t0, 0x2E       # dot
+                li      $t1, 8
+                la      $t2, FNAME      
+                move    $t8, $zero
+                
+FNCOPY:         lh      $t3, 0($v1)
+                beq     $t3, $t0, ABLK  # $t3==dot
+                addi    $t3, $t3, -32
+                sh      $t3, 0($t2)
+                addi    $v1, $v1, 1
+                addi    $t2, $t2, 1
+                addi    $t8, $t8, 1
+                beq     $t8, $t1, FOCOPY
+                jd      FNCOPY
+
+ABLK:           li      $t3, 0x20
+                sh      $t3, 0($t2)
+                addi    $t2, $t2, 1
+                addi    $t8, $t8, 1
+                beq     $t8, $t1, FOCOPY
+                jd      ABLK                 
+
+FOCOPY:         addi    $v1, $v1, 1
+                li      $t1, 3
+                la      $t2, FORMAT
+                move    $t8, $zero
+
+FOLOOP:         lh      $t3, 0($v1)
+                beq     $t3, $zero, ENDFCPY
+                addi    $t3, $t3, -32
+                sh      $t3, 0($t2)
+                addi    $v1, $v1, 1
+                addi    $t2, $t2, 1
+                addi    $t8, $t8, 1                
+                beq     $t8, $t1, ENDFCPY
+                jd      FOLOOP
+               
+ENDFCPY:        sh      $zero, 0($t2)
+
+                #li      $v0, 14             # test output2
+                #la      $a0, FNAME
+                #li      $a1, 80
+                #syscall
+                
+                li      $v0, 9              # fopen
+                la      $a0, FNAME
+                syscall
+                
+                li      $v0, 16             # ftail
+                syscall
+                
+                move    $s4, $v0
+                move    $a0, $v0            # fread
+                li      $v0, 10
+                #li      $a0, 0x40
+                la      $a1, EDITORMEM
+                syscall
+                
+                li      $s7, 40
+                li      $s6, 25
+                li      $s5, 0x0800
+                addi    $s4, $s4, 1
+                move    $s3, $s4
+                li      $t7, 0x5F
+                li      $t6, 0x0000FFFF
+                move    $t5, $zero
+                la      $t4, EDITORMEM
+                addi    $t4, $t4, 1
+                
+                add     $t0, $t4, $s3
+                sh      $t7, 0($t0)
+                sh      $zero, 1($t0)  
+                
+                li      $t0, 0x31
+                sh      $t0, 0x3090($zero)
+                jal     GETCHAR
+                              
+                #jal     GETCHAR
+                jd      MAINLOOP
                  
-str:    .asciiz "Serenity Editor v2.0"       
+str:            .asciiz "Serenity Editor v2.0"       
 
 EDITORMEM:      .2byte  EDITORMEM
                 .space  0x800
+                
+RETADDR:        .space  1
+
+FNAME:          .space  4
+FORMAT:         .space  2
