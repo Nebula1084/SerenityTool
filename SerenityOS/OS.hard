@@ -24,12 +24,7 @@ build\SVD: bin\IntEntry.bit\
 
 build\boot.bit: bin\boot.bit 
 	$(MV)   bin\boot.bit boot.bit 
-	$(MV)   bin\boot.bit build\boot.bit
-    
-app\SHELL.BIT: SHELL.M
-	$(SASM) SHELL.M
-	$(MV) SHELL.bit app\SHELL.BIT
-	$(RM) SHELL.bit
+	$(MV)   bin\boot.bit build\boot.bit    
 	
 bin\\%.bit: src\%.mips
 	$(SASM) $<

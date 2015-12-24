@@ -1,0 +1,16 @@
+SASM    = SerenityASM.exe
+SLINK   = SerenityLINK.exe
+MV = copy
+RM = del
+
+All: app\EDIT.BIT app\SHELL.BIT
+
+app\EDIT.BIT: src\editor.mips
+	$(SASM) src\editor.mips
+	$(MV) src\editor.bit app\EDIT.BIT
+	$(RM) src\editor.bit
+    
+app\SHELL.BIT: src\cmd.mips
+	$(SASM) src\cmd.mips
+	$(MV) src\cmd.bit app\SHELL.BIT
+	$(RM) src\cmd.bit
