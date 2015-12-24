@@ -1,8 +1,9 @@
         push    $ra
         		
-        la		$a0, hello_world
-		li		$a1, 2
-		li		$v0, 1
+        move    $a0, $v1        
+		li		$a1, 3
+        li      $a2, 3
+		li		$v0, 4
 		syscall   #314
         
 sus:    jd      sus             

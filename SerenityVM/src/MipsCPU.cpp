@@ -46,6 +46,8 @@ void MipsCPU::run(){
 	int sector;	
 	int p=0;
 	while(c!='q'){
+        if (debug)
+            printLog();
         if (rgf[0]!=0)
             throw -1;
 		if ((comm=MMU.getData(DCOMM))!=D_COMM_NONE){
@@ -55,16 +57,16 @@ void MipsCPU::run(){
 			short tmp,tmp1;
 			switch(comm){				
 				case D_COMM_WRITE:
-					Log::logFile << "Write" << DCONT << endl;
+					// Log::logFile << "Write" << DCONT << endl;
 					for (int i=0; i<256; i++){
 						tmp = MMU.getMemory()[DCONT+i];
                         tmp = ((tmp >> 8) & 0x00FF) + (tmp << 8);
-                        Log::logFile << i << "----x" << hex << tmp << endl;
+                        // Log::logFile << i << "----x" << hex << tmp << endl;
 						fwrite(&tmp, 2, 1, disk);	
 					}
 				break;
 				case D_COMM_READ:
-					Log::logFile << "Read" << DCONT << endl;
+					// Log::logFile << "Read" << DCONT << endl;
 					for (int i=0; i<256; i++){						
 						fread(&tmp, 2, 1, disk);								
 						tmp = ((tmp >> 8) & 0x00FF) + (tmp << 8);												
@@ -415,9 +417,51 @@ void MipsCPU::printReg(){
 		cout << "ra:0x" << setw(8) << rgf[31] << "\t" << endl;
 		cout << "epc:0x" << setw(8) << cpf[0] << "\t";
 		cout << "cause:0x" << setw(8) << cpf[1] << "\t";
-		cout << "state:0x" << setw(8) << cpf[2] << "\t" << endl;		
+		cout << "state:0x" << setw(8) << cpf[2] << "\t" << endl;		        	
 }
 
 void MipsCPU::setDebug(bool d){
 	debug = d;
+}
+
+void MipsCPU::printLog(){
+        Log::logFile << endl;
+		Log::logFile << operation << " opcode:" << hex << op << " rd:" << rd << " rs:" << rs << " rt:" << rt << " sft:" << sft << " data:" << dat << " address:"<< adr << endl;
+		Log::logFile << "code:0x" << hex << setw(8) << setfill('0') << IR << endl;
+		Log::logFile << "PC:0x" << hex << setw(8) << PC << endl;
+		Log::logFile << "$zero:0x" << setw(8) << rgf[0] << "\t";
+		Log::logFile << "at:0x" << setw(8) << rgf[1] << "\t";
+		Log::logFile << "v0:0x" << setw(8) << rgf[2] << "\t";
+		Log::logFile << "v1:0x" << setw(8) << rgf[3] << "\t" << endl;
+		Log::logFile << "a0:0x" << setw(8) << rgf[4] << "\t";
+		Log::logFile << "a1:0x" << setw(8) << rgf[5] << "\t";
+		Log::logFile << "a2:0x" << setw(8) << rgf[6] << "\t";
+		Log::logFile << "a3:0x" << setw(8) << rgf[7] << "\t" << endl;
+		Log::logFile << "t0:0x" << setw(8) << rgf[8] << "\t";
+		Log::logFile << "t1:0x" << setw(8) << rgf[9] << "\t";
+		Log::logFile << "t2:0x" << setw(8) << rgf[10] << "\t";
+		Log::logFile << "t3:0x" << setw(8) << rgf[11] << "\t" << endl;
+		Log::logFile << "t4:0x" << setw(8) << rgf[12] << "\t";
+		Log::logFile << "t5:0x" << setw(8) << rgf[13] << "\t";
+		Log::logFile << "t6:0x" << setw(8) << rgf[14] << "\t";
+		Log::logFile << "t7:0x" << setw(8) << rgf[15] << "\t" << endl;
+		Log::logFile << "s0:0x" << setw(8) << rgf[16] << "\t";
+		Log::logFile << "s1:0x" << setw(8) << rgf[17] << "\t";
+		Log::logFile << "s2:0x" << setw(8) << rgf[18] << "\t";
+		Log::logFile << "s3:0x" << setw(8) << rgf[19] << "\t" << endl;
+		Log::logFile << "s4:0x" << setw(8) << rgf[20] << "\t";
+		Log::logFile << "s5:0x" << setw(8) << rgf[21] << "\t";
+		Log::logFile << "s6:0x" << setw(8) << rgf[22] << "\t";
+		Log::logFile << "s7:0x" << setw(8) << rgf[23] << "\t" << endl;
+		Log::logFile << "t8:0x" << setw(8) << rgf[24] << "\t";
+		Log::logFile << "t9:0x" << setw(8) << rgf[25] << "\t";
+		Log::logFile << "k0:0x" << setw(8) << rgf[26] << "\t";
+		Log::logFile << "k1:0x" << setw(8) << rgf[27] << "\t" << endl;
+		Log::logFile << "gp:0x" << setw(8) << rgf[28] << "\t";
+		Log::logFile << "sp:0x" << setw(8) << rgf[29] << "\t";
+		Log::logFile << "fp:0x" << setw(8) << rgf[30] << "\t";
+		Log::logFile << "ra:0x" << setw(8) << rgf[31] << "\t" << endl;
+		Log::logFile << "epc:0x" << setw(8) << cpf[0] << "\t";
+		Log::logFile << "cause:0x" << setw(8) << cpf[1] << "\t";
+		Log::logFile << "state:0x" << setw(8) << cpf[2] << "\t" << endl;	
 }

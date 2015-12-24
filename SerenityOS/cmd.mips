@@ -4,12 +4,30 @@
 			move	$a2, $zero
 			syscall
 			
-			li		$t0, 0x31
+			li		$t0, 0x32
 			sh		$t0, 0x3050($zero)
 			
 			move	$s7, $zero 		# CMDMEM number
-			la		$s6, CMDTABLE	# MEMtable
+			la		$s6, CMDTABLE	# MEMtable                        
+            
 			lw		$s5, 0($s6)		# initial space
+            
+            push    $a0
+            push    $a1
+            push    $a2
+            push    $v0
+            
+            move    $a0, $s5
+            li      $a1, 5
+            li      $a2, 18
+            li      $v0, 4
+            #syscall
+            
+            pop     $v0
+            pop     $a2
+            pop     $a1
+            pop     $a0                                   
+            
 			move	$s4, $zero		# length
 			move	$s3, $zero 		# offset of cursor
 			move	$s2, $zero   	# char replaced by cursor

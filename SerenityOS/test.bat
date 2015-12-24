@@ -1,2 +1,2 @@
 cls
-SerenityVM boot.bit -d
+SerenityVM boot.bit

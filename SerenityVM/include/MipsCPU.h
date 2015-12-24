@@ -37,6 +37,7 @@ public:
 	~MipsCPU();
 	void boot(ifstream &fin);
 	void printReg();
+    void printLog();
 	void run();
 	void setDebug(bool d);
 	void printPC(){
