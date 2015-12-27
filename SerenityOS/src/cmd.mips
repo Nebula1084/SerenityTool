@@ -4,8 +4,8 @@
 			move	$a2, $zero
 			syscall
 			
-			li		$t0, 0x32
-			sh		$t0, 0x3050($zero)
+			#li		$t0, 0x32
+			#sh		$t0, 0x3050($zero)
 			
 			move	$s7, $zero 		# CMDMEM number
 			la		$s6, CMDTABLE	# MEMtable
@@ -27,10 +27,10 @@ NEWLINE:	li		$v0, 14
 			mul		$a1, $t6, $t0
 			syscall					# print prompt
 			
-CMDLOOP:	li		$v0, 3			# getchar
+CMDLOOP:	li		$v0, 3			# getchar,342
 			syscall
 			
-			li		$t0, 0x00010026 # up arrow
+			li		$t0, 0x00010026 # up arrow,348
 			beq		$a0, $t0, UPARROW
 			li		$t0, 0x00010028 # down arrow
 			beq		$a0, $t0, DOWNARROW
@@ -67,7 +67,7 @@ PRINT:		li		$v0, 14
 			mul		$t0, $t6, $t1
 			addi	$a1, $t0, 11	
 			syscall
-			jd		CMDLOOP
+			jd		CMDLOOP			# 3a0
 
 BACKSPACE:  beq		$s3, $zero, PRINT
 			add		$t1, $s3, $s5
@@ -228,7 +228,56 @@ EDIT2:		li		$t0, 0x20		# space
 			addi	$t6, $t6, -1
 
 			
-SKIPEDIT:			
+SKIPEDIT:	la		$t0, SASM
+			move	$t1, $s5
+			move	$t2, $zero
+			li		$t8, 4			# 4fa
+SASMLOOP:	lh		$t3, 0($t0)
+			lh		$t4, 0($t1)
+			bne		$t3, $t4, SKIPSASM
+			addi	$t2, $t2, 1
+			addi	$t0, $t0, 1
+			addi	$t1, $t1, 1
+			bne		$t2, $t8, SASMLOOP
+			
+			li		$t0, 0x20		# 50e
+			lh		$t4, 0($t1)
+			bne		$t0, $t4, SKIPSASM
+			addi	$t1, $t1, 1		
+			lh		$t4, 0($t1)
+			beq		$t4, $zero, SKIPSASM
+			
+			li		$v0, 7
+			addi	$v1, $s5, 5
+			la		$a0, EXECSASM
+			syscall
+			
+SKIPSASM:	la		$t0, TEST
+			move	$t1, $s5
+			move	$t2, $zero
+			li		$t8, 4
+TESTLOOP:	lh		$t3, 0($t0)		# 536
+			lh		$t4, 0($t1)
+			bne		$t3, $t4,SKIPTEST
+			addi	$t2, $t2, 1
+			addi	$t0, $t0, 1
+			addi	$t1, $t1, 1
+			bne		$t2, $t8, TESTLOOP
+			
+			#lh		$t4, 0($t1)
+			#bne		$t4, $zero, SKIPTEST
+			
+			li		$v0, 7
+			move	$v1, $zero
+			la		$a0, EXECTEST
+			syscall
+			
+			li		$v0, 6
+			move	$a1, $zero
+			move	$a2, $zero
+			syscall
+			
+SKIPTEST:				
 			addi	$t5, $t5, 2		# next space 
 			li		$t0, 12
 			bne		$t5, $t0, SKIP3
@@ -280,3 +329,7 @@ PROMPT:		.asciiz "Serenity:> _"
 DIR:		.asciiz "dir"		
 EDIT:		.asciiz "edit"
 EDITOR:		.asciiz "EDIT    BIT"
+SASM:		.asciiz "sasm"
+EXECSASM:	.asciiz "ASM     BIT"
+TEST:		.asciiz "test"
+EXECTEST:	.asciiz "TEST    BIT"

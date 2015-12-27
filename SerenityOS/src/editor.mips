@@ -7,6 +7,10 @@
                 move    $a2, $zero
                 syscall
                 
+                la      $a0, str
+                li      $v0, 1
+                li      $a1, 10
+                syscall
                 
                 la      $t0, EDITORMEM
                 addi    $t0, $t0, 1
@@ -17,12 +21,11 @@ CLEARMEM:       add     $t3, $t0, $t2
                 addi    $t2, $t2, 1
                 beq     $t1, $t2, SK
                 jd      CLEARMEM
-                
 SK:
-                li      $t0, 0x32
-                sh      $t0, 0x3080($zero)
-                jal     GETCHAR                
-                bne     $v1, $zero, LOADFILE
+                #li      $t0, 0x32
+                #sh      $t0, 0x3080($zero)
+                #jal     GETCHAR                
+                bne     $v1, $zero, LOADFILE    # 6be
                  
                 sw      $zero, 0x4FFE($zero)  
                 li      $s7, 40                 # width of screen 
@@ -33,14 +36,8 @@ SK:
                 li      $t7, 0x5F               # underline
                 li      $t6, 0x0000FFFF         # mask 
                 move    $t5, $zero    
-                la      $t4, EDITORMEM               
+                la      $t4, EDITORMEM
                 addi    $t4, $t4, 1             # address to store data
-                
-                li      $v0, 4
-                move    $a0, $t4
-                li      $a1, 2
-                li      $a2, 0
-                syscall
                 
                 sh      $t7, 0($t4)
                 addi    $t3, $t4, 1
@@ -58,12 +55,17 @@ MAINLOOP:       jal     GETCHAR
                 li      $t0, 0x00010027         # right arrow
                 beq     $a0, $t0, RIGHTARROW
                 li      $t0, 0x00000008         # backspace
-                beq     $a0, $t0, BACKSPACE                      
+                beq     $a0, $t0, BACKSPACE
+                li      $t0, 0x00010000         # mask
+                and     $t0, $t0, $a0
+                bne     $t0, $zero, MAINLOOP                       
                 
                 and     $a0, $a0, $t6
                 add     $t1, $s3, $t4
                 add     $t2, $s4, $t4
                 beq     $t1, $t2, INSERT
+                lh      $t0, 0($t2)
+                sh      $t0, 1($t2)
 MOVELOOP1:      lh      $t0, -1($t2)
                 sh      $t0, 0($t2)
                 addi    $t2, $t2, -1
@@ -141,8 +143,9 @@ EXIT:           add     $t3, $t4, $s3
                 sh      $zero, 1($t3)
                 sh      $zero, 0($t3)
                 li      $v0, 11         # fwrite
-                li      $a0, 0x40
+                addi    $a0, $s3, -1
                 la      $a1, EDITORMEM
+                addi    $a1, $a1, 1
                 syscall
                 
                 li      $v0, 13         # fclose
@@ -193,7 +196,7 @@ FOLOOP:         lh      $t3, 0($v1)
                 beq     $t8, $t1, ENDFCPY
                 jd      FOLOOP
                
-ENDFCPY:        sh      $zero, 0($t2)
+ENDFCPY:        sh      $zero, 0($t2)       # 81c
 
                 #li      $v0, 14             # test output2
                 #la      $a0, FNAME
@@ -204,43 +207,40 @@ ENDFCPY:        sh      $zero, 0($t2)
                 la      $a0, FNAME
                 syscall
                 
-                li      $v0, 16             # ftail
+                li      $v0, 16             # ftail,83a
                 syscall
                 
-                move    $s4, $v0
+                move    $s4, $v0            # 840
                 move    $a0, $v0            # fread
                 li      $v0, 10
                 #li      $a0, 0x40
                 la      $a1, EDITORMEM
+                addi    $a1, $a1, 1
                 syscall
                 
-                li      $s7, 40
+                li      $s7, 40             # 842
                 li      $s6, 25
                 li      $s5, 0x0800
-                addi    $s4, $s4, 1
                 move    $s3, $s4
-                li      $t7, 0x5F
+                addi    $s4, $s4, 1
+#                beq     $s3, $zero, SK2
+#                addi    $s3, $s3, 1
+#                addi    $s4, $s4, 1
+SK2:            li      $t7, 0x5F
                 li      $t6, 0x0000FFFF
                 move    $t5, $zero
                 la      $t4, EDITORMEM
                 addi    $t4, $t4, 1
-                
-                li      $v0, 4
-                move    $a0, $t4
-                li      $a1, 2
-                li      $a2, 0
-                syscall
-                
+
                 add     $t0, $t4, $s3
                 sh      $t7, 0($t0)
-                sh      $zero, 1($t0)  
+                sh      $zero, 1($t0)       # 868
                 
-                li      $t0, 0x31
-                sh      $t0, 0x3090($zero)
-                jal     GETCHAR
-                              
+                #li      $t0, 0x31
+                #sh      $t0, 0x3090($zero)
                 #jal     GETCHAR
-                jd      MAINLOOP
+
+                jd      PRINT
                  
 str:            .asciiz "Serenity Editor v2.0"       
 
