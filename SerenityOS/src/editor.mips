@@ -33,8 +33,14 @@ SK:
                 li      $t7, 0x5F               # underline
                 li      $t6, 0x0000FFFF         # mask 
                 move    $t5, $zero    
-                la      $t4, EDITORMEM
+                la      $t4, EDITORMEM               
                 addi    $t4, $t4, 1             # address to store data
+                
+                li      $v0, 4
+                move    $a0, $t4
+                li      $a1, 2
+                li      $a2, 0
+                syscall
                 
                 sh      $t7, 0($t4)
                 addi    $t3, $t4, 1
@@ -218,6 +224,12 @@ ENDFCPY:        sh      $zero, 0($t2)
                 move    $t5, $zero
                 la      $t4, EDITORMEM
                 addi    $t4, $t4, 1
+                
+                li      $v0, 4
+                move    $a0, $t4
+                li      $a1, 2
+                li      $a2, 0
+                syscall
                 
                 add     $t0, $t4, $s3
                 sh      $t7, 0($t0)

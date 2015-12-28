@@ -479,12 +479,7 @@ load_sector:
 		
 		sw		$a0, 0x50FC($zero)
 		addi	$s0, $zero, 1
-		sh		$s0, 0x50FE($zero)
-        
-        li      $t0, 1000
-SUS_L_DELAY:        
-        addi    $t0, $t0, -1
-        bne     $t0, $zero, SUS_L_DELAY
+		sh		$s0, 0x50FE($zero)        
         
 SUS_L:	lh		$s0, 0x50FF($zero)
 		beq		$s0, $zero, SUS_L
@@ -505,12 +500,7 @@ dump_sector:
 		
 		sw		$a0, 0x50FC($zero)
 		addi	$s0, $zero, 2
-		sh		$s0, 0x50FE($zero)
-        
-        li      $t0, 1000   
-SUS_D_DELAY:        
-        addi    $t0, $t0, -1
-        bne     $t0, $zero, SUS_D_DELAY
+		sh		$s0, 0x50FE($zero)       
         
 SUS_D:	lh		$s0, 0x50FF($zero)
 		beq		$s0, $zero, SUS_D	

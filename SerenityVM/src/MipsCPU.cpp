@@ -46,8 +46,6 @@ void MipsCPU::run(){
 	int sector;	
 	int p=0;
 	while(c!='q'){
-        if (debug)
-            printLog();
         if (rgf[0]!=0)
             throw -1;
 		if ((comm=MMU.getData(DCOMM))!=D_COMM_NONE){
