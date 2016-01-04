@@ -1,0 +1,1 @@
+copy svd.vhd Senerity.vhd

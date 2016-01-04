@@ -1,0 +1,30 @@
+//NET "btn" LOC = "L13";
+NET "clk_50M" LOC= "C9";
+NET "rst_n" LOC= "H18";
+NET "RegNumPlus" LOC="L14";
+
+//VGA
+NET "hsync" LOC= "F15";
+NET "vsync" LOC= "F14";
+NET "vga_r" LOC= "H14";
+NET "vga_g" LOC= "H15";
+NET "vga_b" LOC= "G15";
+
+//LCD
+NET "flash_ce" LOC = "D16";// | IOSTANDARD = LVTTL | DRIVE = 2 | SLEW = SLOW ;
+NET "lcd_d<0>" LOC = "R15";// | IOSTANDARD = LVTTL | DRIVE = 2 | SLEW = SLOW ;
+NET "lcd_d<1>" LOC = "R16";// | IOSTANDARD = LVTTL | DRIVE = 2 | SLEW = SLOW ;
+NET "lcd_d<2>" LOC = "P17";// | IOSTANDARD = LVTTL | DRIVE = 2 | SLEW = SLOW ;
+NET "lcd_d<3>" LOC = "M15";// | IOSTANDARD = LVTTL | DRIVE = 2 | SLEW = SLOW ;
+NET "lcd_e" LOC = "M18";// | IOSTANDARD = LVTTL | DRIVE = 2 | SLEW = SLOW ;
+NET "lcd_rs" LOC = "L18";// | IOSTANDARD = LVTTL | DRIVE = 2 | SLEW = SLOW ;
+NET "lcd_rw" LOC = "L17";// | IOSTANDARD = LVTTL | DRIVE = 2 | SLEW = SLOW ;
+
+//keyboard
+NET "PS2C" LOC = "G14";// | IOSTANDARD = LVCMOS33 | DRIVE = 8 | SLEW = SLOW ;
+NET "PS2D" LOC = "G13";// | IOSTANDARD = LVCMOS33 | DRIVE = 8 | SLEW = SLOW ;
+NET "PS2C" CLOCK_DEDICATED_ROUTE = FALSE;
+
+//Serial Port
+NET "RxD" LOC = "R7"; //| IOSTANDARD = LVTTL ;
+NET "TxD" LOC = "M14"; //| IOSTANDARD = LVTTL | DRIVE = 8 | SLEW = SLOW ;

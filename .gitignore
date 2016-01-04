@@ -3,3 +3,4 @@
 *.bit
 *.tmp
 log.txt
+*.class

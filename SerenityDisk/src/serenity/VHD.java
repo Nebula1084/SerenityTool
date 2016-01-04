@@ -16,7 +16,7 @@ public class VHD {
 	Boolean writing = new Boolean(false);
 	InputStream in;
 	OutputStream out;
-
+	final long MaxOffset = disk.length() / SECTOR_SIZE;
     /** */
     public Runnable SerialReader = new Runnable() {
     	int state = 0;
@@ -62,8 +62,10 @@ public class VHD {
 		                	switch(buffer[i]){
 		                	case 1:
 		                		s.append("Read\n");
-		                		synchronized(reading){
-		                			reading = true;
+		                		if(offset <= MaxOffset){
+		                			synchronized(reading){
+		                				reading = true;
+		                			}
 		                		}
 		                		state = 0;
 		                		System.out.println(s);
@@ -71,11 +73,20 @@ public class VHD {
 		                		break;
 		                	case 2:
 		                		s.append("Write\n");
-		                		state = 2;
-		                		count = 0;
+		                		if(offset <= MaxOffset){
+			                		state = 2;
+			                		count = 0;
+		                		}
+		                		else{
+		                			System.out.println(s);
+		                			System.out.println("Out of range " + MaxOffset);
+		                			throw new IndexOutOfBoundsException();
+//		                			state = 0;
+		                		}
 		                		writing = true;
 		                		break;
 		                	default:
+	                			System.out.println(s);
 		                		System.out.println("\nWrong command!");
 		                	}
 		                	break;
